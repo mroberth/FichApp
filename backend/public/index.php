@@ -4,22 +4,26 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use FichApp\Support\Env;
-use FichApp\Support\Container;
+use App\Core\Env;
+use App\Core\Respuesta;
+use App\Core\ExcepcionApi;
 
 // 1. Cargar variables de entorno
 Env::load(__DIR__ . '/../.env');
 
-// 2. Establecer zona horaria por defecto (Venezuela)
+// 2. Zona horaria de Venezuela por defecto
 date_default_timezone_set((string)Env::get('TIMEZONE', 'America/Caracas'));
 
-// 3. Respuesta JSON inicial
-header('Content-Type: application/json; charset=utf-8');
+// 3. Manejador global de errores con contrato estándar
+set_exception_handler(function (\Throwable $e) {
+    Respuesta::error($e);
+});
 
-echo json_encode([
-    'app' => 'FichApp API',
+// 4. Salida inicial de verificación operacional
+Respuesta::exito([
+    'aplicacion' => 'FichApp API',
     'version' => '0.3',
-    'status' => 'operational',
-    'timezone' => date_default_timezone_get(),
-    'timestamp' => date('c'),
-], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    'estado' => 'operativo',
+    'zona_horaria' => date_default_timezone_get(),
+    'fecha_hora' => date('c'),
+]);

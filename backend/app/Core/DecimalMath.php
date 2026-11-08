@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace FichApp\Support;
+namespace App\Core;
 
 use InvalidArgumentException;
 use DivisionByZeroError;
 
 /**
- * Motor de Aritmética Decimal Exacta (Fixed-Point Decimal).
- * Evita cualquier uso de tipos flotantes IEEE 754 para cálculos financieros.
- * Utiliza la extensión nativa bcmath si está instalada, o un motor puro de cadenas de alta precisión.
+ * Motor de Aritmética Decimal Fija (Fixed-Point Decimal).
+ * Asegura cálculos monetarios en USD y VES con cero números flotantes.
  */
 final class DecimalMath
 {
@@ -24,9 +23,6 @@ final class DecimalMath
         return self::$hasBcmath;
     }
 
-    /**
-     * Suma dos montos decimales con escala fija
-     */
     public static function add(string $a, string $b, int $scale = 2): string
     {
         if (self::checkBcmath()) {
@@ -35,9 +31,6 @@ final class DecimalMath
         return self::fallbackOp($a, $b, '+', $scale);
     }
 
-    /**
-     * Resta dos montos decimales ($a - $b)
-     */
     public static function sub(string $a, string $b, int $scale = 2): string
     {
         if (self::checkBcmath()) {
@@ -46,9 +39,6 @@ final class DecimalMath
         return self::fallbackOp($a, $b, '-', $scale);
     }
 
-    /**
-     * Multiplica dos montos decimales
-     */
     public static function mul(string $a, string $b, int $scale = 2): string
     {
         if (self::checkBcmath()) {
@@ -57,9 +47,6 @@ final class DecimalMath
         return self::fallbackOp($a, $b, '*', $scale);
     }
 
-    /**
-     * Divide dos montos decimales ($a / $b)
-     */
     public static function div(string $a, string $b, int $scale = 2): string
     {
         $bNorm = self::normalize($b);
@@ -73,10 +60,6 @@ final class DecimalMath
         return self::fallbackOp($a, $b, '/', $scale);
     }
 
-    /**
-     * Compara dos montos decimales:
-     * Retorna 0 si son iguales, 1 si $a > $b, -1 si $a < $b
-     */
     public static function comp(string $a, string $b, int $scale = 2): int
     {
         if (self::checkBcmath()) {
@@ -90,16 +73,12 @@ final class DecimalMath
         return str_starts_with($val, '-') ? -1 : 1;
     }
 
-    /**
-     * Normaliza el formato de un número decimal en cadena
-     */
     public static function normalize(string $num): string
     {
         $num = trim($num);
         if ($num === '') {
             return '0.00';
         }
-        // Reemplazar coma por punto si viene en formato europeo/latam
         $num = str_replace(',', '.', $num);
         if (!preg_match('/^-?\d+(\.\d+)?$/', $num)) {
             throw new InvalidArgumentException("Formato decimal inválido: '{$num}'");
@@ -107,18 +86,12 @@ final class DecimalMath
         return $num;
     }
 
-    /**
-     * Implementación pura en enteros escalados si bcmath no está compilado
-     */
     private static function fallbackOp(string $a, string $b, string $op, int $scale): string
     {
         $a = self::normalize($a);
         $b = self::normalize($b);
-
-        // Multiplicador de escala
         $factor = 10 ** $scale;
 
-        // Convertir a enteros escalados
         $aParts = explode('.', $a);
         $bParts = explode('.', $b);
 

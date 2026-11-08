@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace FichApp\Tests\Unit;
+namespace App\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use FichApp\Support\Env;
+use App\Core\Env;
 
 final class EnvTest extends TestCase
 {

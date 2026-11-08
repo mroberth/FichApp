@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace FichApp\Tests\Unit;
+namespace App\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use FichApp\Infrastructure\Persistence\Database;
-use FichApp\Support\Env;
+use App\Core\Database;
 use PDO;
 use Exception;
 
@@ -14,7 +13,6 @@ final class DatabaseTest extends TestCase
 {
     protected function setUp(): void
     {
-        // Forzar conexión SQLite en memoria para tests
         putenv('DB_CONNECTION=sqlite');
         putenv('DB_DATABASE=:memory:');
         Database::setConnection(null);
@@ -61,10 +59,10 @@ final class DatabaseTest extends TestCase
             Database::transaction(function (PDO $db) {
                 $stmt = $db->prepare("INSERT INTO test_rollback (amount) VALUES (:amount)");
                 $stmt->execute(['amount' => '25.00']);
-                throw new Exception("Simulación de fallo en medio de la transacción");
+                throw new Exception("Simulación de error en la transacción");
             });
         } catch (Exception $e) {
-            $this->assertSame("Simulación de fallo en medio de la transacción", $e->getMessage());
+            $this->assertSame("Simulación de error en la transacción", $e->getMessage());
         }
 
         $stmt = $pdo->query("SELECT COUNT(*) FROM test_rollback");

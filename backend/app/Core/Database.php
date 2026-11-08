@@ -2,43 +2,29 @@
 
 declare(strict_types=1);
 
-namespace FichApp\Infrastructure\Persistence;
+namespace App\Core;
 
 use PDO;
 use PDOException;
-use RuntimeException;
 use Throwable;
-use FichApp\Support\Env;
 
-/**
- * Gestor centralizado de conexiones PDO y control estricto de transacciones ACID.
- */
 final class Database
 {
-    private static ?PDO $connection = null;
+    private static ?PDO $conexion = null;
 
-    /**
-     * Obtiene la conexión PDO activa o inicializa una nueva según la configuración
-     */
     public static function getConnection(): PDO
     {
-        if (self::$connection === null) {
-            self::$connection = self::createConnection();
+        if (self::$conexion === null) {
+            self::$conexion = self::crearConexion();
         }
-        return self::$connection;
+        return self::$conexion;
     }
 
-    /**
-     * Permite inyectar una conexión manual (útil para tests con SQLite en memoria)
-     */
     public static function setConnection(?PDO $pdo): void
     {
-        self::$connection = $pdo;
+        self::$conexion = $pdo;
     }
 
-    /**
-     * Ejecuta una acción dentro de una transacción segura de base de datos
-     */
     public static function transaction(callable $callback): mixed
     {
         $pdo = self::getConnection();
@@ -50,9 +36,9 @@ final class Database
         $pdo->beginTransaction();
 
         try {
-            $result = $callback($pdo);
+            $resultado = $callback($pdo);
             $pdo->commit();
-            return $result;
+            return $resultado;
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
@@ -61,11 +47,11 @@ final class Database
         }
     }
 
-    private static function createConnection(): PDO
+    private static function crearConexion(): PDO
     {
         $driver = Env::get('DB_CONNECTION', 'pgsql');
 
-        $options = [
+        $opciones = [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
@@ -73,17 +59,17 @@ final class Database
 
         try {
             return match ($driver) {
-                'pgsql' => self::createPgsqlConnection($options),
-                'mysql' => self::createMysqlConnection($options),
-                'sqlite' => self::createSqliteConnection($options),
-                default => throw new RuntimeException("Driver de base de datos no soportado: '{$driver}'"),
+                'pgsql' => self::crearConexionPgsql($opciones),
+                'mysql' => self::crearConexionMysql($opciones),
+                'sqlite' => self::crearConexionSqlite($opciones),
+                default => throw ExcepcionApi::errorInterno("Driver de base de datos no soportado: '{$driver}'"),
             };
         } catch (PDOException $e) {
-            throw new RuntimeException("Error de conexión a la base de datos [{$driver}]: " . $e->getMessage(), (int)$e->getCode(), $e);
+            throw ExcepcionApi::errorInterno("Error conectando a la base de datos: " . $e->getMessage());
         }
     }
 
-    private static function createPgsqlConnection(array $options): PDO
+    private static function crearConexionPgsql(array $opciones): PDO
     {
         $host = Env::get('DB_HOST', '127.0.0.1');
         $port = Env::get('DB_PORT', '5432');
@@ -92,10 +78,10 @@ final class Database
         $pass = Env::get('DB_PASSWORD', 'postgres');
 
         $dsn = "pgsql:host={$host};port={$port};dbname={$dbname}";
-        return new PDO($dsn, $user, $pass, $options);
+        return new PDO($dsn, $user, $pass, $opciones);
     }
 
-    private static function createMysqlConnection(array $options): PDO
+    private static function crearConexionMysql(array $opciones): PDO
     {
         $host = Env::get('DB_HOST', '127.0.0.1');
         $port = Env::get('DB_PORT', '3306');
@@ -104,12 +90,12 @@ final class Database
         $pass = Env::get('DB_PASSWORD', '');
 
         $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
-        return new PDO($dsn, $user, $pass, $options);
+        return new PDO($dsn, $user, $pass, $opciones);
     }
 
-    private static function createSqliteConnection(array $options): PDO
+    private static function crearConexionSqlite(array $opciones): PDO
     {
         $path = Env::get('DB_DATABASE', ':memory:');
-        return new PDO("sqlite:{$path}", null, null, $options);
+        return new PDO("sqlite:{$path}", null, null, $opciones);
     }
 }

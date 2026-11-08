@@ -11,12 +11,12 @@
     },
     "autoload": {
         "psr-4": {
-            "FichApp\\": "src/"
+            "App\\": "app/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "FichApp\\Tests\\": "tests/"
+            "App\\Tests\\": "tests/"
         }
     },
     "config": {

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace FichApp\Tests\Unit;
+namespace App\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use FichApp\Support\DecimalMath;
+use App\Core\DecimalMath;
 use DivisionByZeroError;
 
 final class DecimalMathTest extends TestCase
@@ -18,7 +18,6 @@ final class DecimalMathTest extends TestCase
 
     public function testCanSubtractExactDecimalAmounts(): void
     {
-        // Caso de descuento de pronto-pago ($25 base - $20 pronto-pago = $5 descuento)
         $this->assertSame('5.00', DecimalMath::sub('25.00', '20.00', 2));
         $this->assertSame('0.00', DecimalMath::sub('20.00', '20.00', 2));
         $this->assertSame('-5.00', DecimalMath::sub('20.00', '25.00', 2));
@@ -31,7 +30,6 @@ final class DecimalMathTest extends TestCase
 
     public function testCanDivideVesToUsdWithTasaBcv(): void
     {
-        // 1050 VES recibidos a tasa 52.50 = 20.00 USD exactos
         $this->assertSame('20.00', DecimalMath::div('1050.00', '52.50', 2));
     }
 

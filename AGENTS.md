@@ -9,7 +9,7 @@ Define los límites de autonomía del agente de IA, comandos oficiales y reglas 
 - Corregir errores de sintaxis, tipos y advertencias del linter (PHPStan / PSR-12).
 - Actualizar comentarios en código, documentación técnica y el archivo `Memory.md` al completar tareas.
 - Ejecutar scripts de consulta y sincronización de ClickUp (`python3 scripts/clickup_sync.py`).
-- Crear clases de servicio, repositorios y entidades dentro de las especificaciones aprobadas en el Sprint activo.
+- Crear DTOs, Servicios, Repositorios y Controladores dentro de las especificaciones aprobadas en el Sprint activo.
 
 ## 2. Debe Validar Antes de Actuar (Requiere Aprobación Humana)
 - Cualquier alteración en el esquema de base de datos (`/backend/migrations`).
@@ -29,10 +29,16 @@ Define los límites de autonomía del agente de IA, comandos oficiales y reglas 
 - **App Móvil Expo:** `cd mobile && npx expo start`
 
 ## 4. Reglas Técnicas Inquebrantables
-1. **PHP 8.5 Puro:** No utilizar frameworks pesados (Laravel, Symfony). Toda la arquitectura se basa en PHP moderno, modular, con el patrón *Service-Repository* y estándares PSR (PSR-4, PSR-7, PSR-11, PSR-12).
+1. **PHP 8.5 Puro (Arquitectura DTO-Controller-Service-Repository):**
+   - Namespace raíz: `App\` mapeado a `app/`.
+   - Controladores en `app/Controllers/`: Funciones directas y limpias sin lógica pesada (estilo DIRPOLES-4).
+   - Objetos de entrada en `app/DTOs/`: Clases readonly tipadas (`public static function desdePeticion()`).
+   - Lógica y validaciones en `app/Services/`: El cerebro del negocio. Toda validación fallida LANZA `ExcepcionApi::validacion()`, `ExcepcionApi::noEncontrado()`, etc.
+   - Acceso a datos en `app/Repositories/`: Consultas SQL preparadas con PDO filtrando obligatoriamente por `academia_id`. Cero validaciones en el repositorio.
+   - Respuestas HTTP exclusivamente mediante `App\Core\Respuesta::exito($datos, $estado)` y `App\Core\Respuesta::error($e)`. Contrato JSON: `{"exito": true, "datos": ...}`.
 2. **Tipado Estricto Obligatorio:** Todos los archivos PHP deben iniciar con `declare(strict_types=1);` sin excepción.
-3. **Aritmética Decimal Exacta:** Prohibido el uso de tipos de coma flotante (`float`) para dinero o tasas. Todos los cálculos financieros se realizan con la extensión nativa **`bcmath`** (`bcadd`, `bcsub`, `bcmul`, `bcdiv`, `bccomp`).
-4. **Inmutabilidad Financiera:** Los registros de la tabla `pagos` confirmados **NUNCA se borran** físicamente (`DELETE` prohibido). Todo error se solventa mediante reversos auditables.
+3. **Aritmética Decimal Exacta:** Prohibido el uso de tipos de coma flotante (`float`) para dinero o tasas. Todos los cálculos financieros se realizan con `App\Core\DecimalMath` (`bcmath`).
+4. **Inmutabilidad Financiera:** Los registros de la tabla `pagos` confirmados **NUNCA se borran** físicamente (`DELETE` prohibido). Todo error se solventa mediante reversos auditados.
 5. **Aislamiento Multi-Tenant Estricto:** Toda consulta o mutación SQL DEBE filtrar explícitamente por `academia_id`.
 6. **Seguridad y Secretos:** Jamás imprimir en logs contraseñas, tokens JWT, credenciales ni la API Key de ClickUp.
 7. **Formato de Commits:** Seguir estrictamente *Conventional Commits*:
