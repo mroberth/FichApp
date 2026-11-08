@@ -1,0 +1,165 @@
+{
+  "space_id": "90178086008",
+  "sprints": {
+    "Sprint 0: Cimientos, DB & Auth": {
+      "list_id": "901718120307",
+      "tasks": {
+        "T0.1": {
+          "id": "86e3zm74p",
+          "name": "[T0.1] Setup PHP 8.5 puro, PSR-4 y Conexión PDO",
+          "priority": 2
+        },
+        "T0.2": {
+          "id": "86e3zm74q",
+          "name": "[T0.2] Router HTTP Ligero y Middlewares de Contexto",
+          "priority": 2
+        },
+        "T0.3": {
+          "id": "86e3zm74r",
+          "name": "[T0.3] Migraciones Base PostgreSQL: Tenants, Usuarios y Auditoría",
+          "priority": 1
+        },
+        "T0.4": {
+          "id": "86e3zm74t",
+          "name": "[T0.4] Servicio de Autenticación, Hashes y Tokens Bearer",
+          "priority": 2
+        },
+        "T0.5": {
+          "id": "86e3zm74u",
+          "name": "[T0.5] Setup de App Móvil Expo y Navegación por Roles",
+          "priority": 3
+        }
+      }
+    },
+    "Sprint 1: Núcleo Deportivo & Familias": {
+      "list_id": "901718120308",
+      "tasks": {
+        "T1.1": {
+          "id": "86e3zm74w",
+          "name": "[T1.1] Migraciones: Categorías, Equipos, Jugadores y Representantes",
+          "priority": 2
+        },
+        "T1.2": {
+          "id": "86e3zm74y",
+          "name": "[T1.2] Repositorios PDO y Servicios de Fichas Deportivas",
+          "priority": 2
+        },
+        "T1.3": {
+          "id": "86e3zm74z",
+          "name": "[T1.3] Endpoints REST Deportivos",
+          "priority": 3
+        },
+        "T1.4": {
+          "id": "86e3zm750",
+          "name": "[T1.4] UI Móvil: Directorio de Jugadores y Búsqueda",
+          "priority": 3
+        }
+      }
+    },
+    "Sprint 2: Cancha Offline-First (Asistencia)": {
+      "list_id": "901718120309",
+      "tasks": {
+        "T2.1": {
+          "id": "86e3zm751",
+          "name": "[T2.1] Migraciones Backend: Sesiones y Registros de Asistencia",
+          "priority": 2
+        },
+        "T2.2": {
+          "id": "86e3zm752",
+          "name": "[T2.2] Base de Datos Local SQLite en App Móvil",
+          "priority": 1
+        },
+        "T2.3": {
+          "id": "86e3zm753",
+          "name": "[T2.3] UI Móvil Entrenador: Toma de Asistencia Táctil Rápida",
+          "priority": 2
+        },
+        "T2.4": {
+          "id": "86e3zm754",
+          "name": "[T2.4] Sincronización en Lote Idempotente (Mobile & API)",
+          "priority": 1
+        }
+      }
+    },
+    "Sprint 3: Obligaciones & Pronto-Pago": {
+      "list_id": "901718120310",
+      "tasks": {
+        "T3.1": {
+          "id": "86e3zm756",
+          "name": "[T3.1] Migraciones: Políticas de Cobranza y Obligaciones",
+          "priority": 2
+        },
+        "T3.2": {
+          "id": "86e3zm757",
+          "name": "[T3.2] Servicio Generador Masivo Idempotente de Mensualidades",
+          "priority": 1
+        },
+        "T3.3": {
+          "id": "86e3zm758",
+          "name": "[T3.3] UI Móvil Admin: Tablero de Facturación y Obligaciones",
+          "priority": 3
+        }
+      }
+    },
+    "Sprint 4: Pagos Multihijo & Tasa BCV": {
+      "list_id": "901718120311",
+      "tasks": {
+        "T4.1": {
+          "id": "86e3zm759",
+          "name": "[T4.1] Migraciones: Pagos Desacoplados, Imputaciones y Saldo a Favor",
+          "priority": 1
+        },
+        "T4.2": {
+          "id": "86e3zm75a",
+          "name": "[T4.2] Módulo de Tasas de Cambio Oficial BCV",
+          "priority": 2
+        },
+        "T4.3": {
+          "id": "86e3zm75c",
+          "name": "[T4.3] Servicio RegistrarPagoFamiliarService y Aritmética BCMath",
+          "priority": 1
+        },
+        "T4.4": {
+          "id": "86e3zm75d",
+          "name": "[T4.4] Motor de Pronto-Pago Acumulativo y Descuentos",
+          "priority": 1
+        },
+        "T4.5": {
+          "id": "86e3zm75e",
+          "name": "[T4.5] Servicio de Reversión Financiera Auditable",
+          "priority": 2
+        },
+        "T4.6": {
+          "id": "86e3zm75f",
+          "name": "[T4.6] UI Móvil Admin: Formulario de Cobro Rápido Familiar",
+          "priority": 2
+        }
+      }
+    },
+    "Sprint 5: Gastos & Piloto Obelisco FC": {
+      "list_id": "901718120313",
+      "tasks": {
+        "T5.1": {
+          "id": "86e3zm75j",
+          "name": "[T5.1] Módulo de Egresos y Gastos Operativos",
+          "priority": 3
+        },
+        "T5.2": {
+          "id": "86e3zm75k",
+          "name": "[T5.2] Reportes de Cuadre de Caja y Morosidad",
+          "priority": 2
+        },
+        "T5.3": {
+          "id": "86e3zm75m",
+          "name": "[T5.3] Auditoría de Seguridad Multi-Tenant y Concurrencia",
+          "priority": 1
+        },
+        "T5.4": {
+          "id": "86e3zm75p",
+          "name": "[T5.4] Despliegue de Servidor y Carga de Datos Piloto Obelisco FC",
+          "priority": 1
+        }
+      }
+    }
+  }
+}
