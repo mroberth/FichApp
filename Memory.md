@@ -7,24 +7,40 @@ Guarda lo que no queremos volver a discutir ni explicar entre sesiones.
 ## 1. Decisiones Técnicas Cerradas (No Reabrir)
 - **Estructura Backend:** Arquitectura estandarizada inspirada en `DIRPOLES-4`:
   - Namespace raíz: `App\` mapeado a `app/`.
-  - Capas: `DTOs` $\rightarrow$ `Controllers` (funciones) $\rightarrow$ `Services` (lógica/validación con `ExcepcionApi`) $\rightarrow$ `Repositories` (SQL PDO).
+  - Capas: `DTOs` $\rightarrow$ `Controllers` (funciones limpias) $\rightarrow$ `Services` (lógica y validación lanzando `ExcepcionApi`) $\rightarrow$ `Repositories` (SQL PDO con filtro obligatorio `academia_id`).
   - Respuestas JSON mediante `App\Core\Respuesta` con formato: `{"exito": true, "datos": ...}` y `{"exito": false, "error": {...}}`.
   - Términos en español para métodos, variables de negocio, clases y excepciones.
-- **Aritmética Financiera:** Todos los cálculos monetarios deben realizarse con `App\Core\DecimalMath` (`bcmath`). Se prohibió el uso de `float`.
+- **Aritmética Financiera:** Todos los cálculos monetarios deben realizarse con `App\Core\DecimalMath` (`bcmath`). Se prohíbe el uso de `float`.
 - **Modelo de Pagos:** Desacoplamiento entre recibo de pago (`pagos`) y aplicaciones de deuda (`imputaciones_pago`), permitiendo que un solo Pago Móvil cubra las cuotas de varios hermanos.
 - **Saldo a Favor:** Bolsa de `saldos_a_favor` asociada al representante para retener excedentes o vueltos.
 - **Asistencia Técnica en Cancha:** Toma de asistencia *offline* para entrenadores mediante SQLite local en React Native Expo y sincronización por lote.
 - **Esquemas de Base de Datos:** Separación formal en PostgreSQL entre el esquema `seguridad` (usuarios, tokens, auditoría) y `negocio` (academias, jugadores, cobranzas, etc.) dentro de la misma base de datos `fichapp_db`.
+- **Identificadores UUIDv4:** Todos los identificadores primarios y foráneos (`id`, `academia_id`, etc.) utilizan UUIDv4. Evitan enumeración maliciosa, facilitan particionamiento multi-tenant y permiten generación de claves únicas offline en dispositivos móviles antes de sincronizar con el backend.
+- **Stack Móvil:** React Native 0.88 + React 19 + Expo SDK 58 en **JavaScript puro** (`.js` / `.jsx`), sin TypeScript.
+- **FichApp Design System:** Basado en la skill normativa `mobile/.antigravity/SKILLS/fichapp-design-system/`.
+  - Tema Claro (Light Theme) sobrio, limpio y moderno estilo Notion/Figma.
+  - Paleta oficial: Fondo `#F3F6F2`, Superficies `#FFFFFF`, Primario `#174D50` (Azul Petróleo), Acento `#B9E44A` (Verde Lima), Texto Principal `#252B27`.
+  - Tokens centralizados en `mobile/src/theme/tokens.js`. Prohibido hardcodear estilos en componentes individuales.
+- **Iconografía Vectorial:** Prohibido el uso de emojis como iconos de interfaz. Uso obligatorio de `lucide-react-native` y `react-native-svg`.
+- **Manejo de Áreas Seguras:** Prohibido el componente nativo `SafeAreaView` de React Native (deprecado). Uso obligatorio de `SafeAreaView` o `useSafeAreaInsets` de `react-native-safe-area-context`.
+- **Resolución de Red Móvil en Desarrollo:** Configuración en `mobile/src/config/api.js` que detecta dinámicamente la IP de la máquina de desarrollo (`Constants.expoConfig.hostUri` vía `expo-constants`, fallback `192.168.50.117:8000`) para garantizar conectividad desde teléfonos físicos en la red Wi-Fi sin colgarse en `localhost` o `10.0.2.2`. Timeout de 8s en `fetch` con `AbortController`.
 - **Ubicación del Código:** `/home/mroberth/Proyectos/fichapp/`.
 - **Repositorio Remoto Oficial:** `https://github.com/mroberth/FichApp.git` (Rama principal: `main`).
 
 ## 2. Errores Resueltos y Soluciones
 - **Estandarización de Excepciones:** Se implementó `App\Core\ExcepcionApi` y `App\Core\ErrorCodes` para que los Servicios lancen excepciones con código, estado HTTP y mensaje en español.
+- **Autenticación PostgreSQL en Fedora:** Se reconfiguró `pg_hba.conf` de `ident` a `scram-sha-256` para permitir conexión de la app con credenciales seguras.
+- **Driver `pdo_pgsql` en Servidor PHP:** El servidor `php -S` debe ejecutarse con `0.0.0.0:8000` y con el paquete `php-pgsql` activo.
+- **Deprecación de PHPUnit 11:** Reemplazado `@depends` en docblocks por el atributo nativo `#[Depends('testMethodName')]`.
+- **Crash `ReferenceError: Property Platform doesn't exist` en Móvil:** Solucionado importando explícitamente `Platform` desde `'react-native'`.
+- **Carga Infinita en Login Móvil en Celulares Físicos:** Se resolvió sustituyendo la IP fija `10.0.2.2` (solo para emuladores PC) por resolución dinámica con `expo-constants` apuntando a la IP Wi-Fi de la laptop (`192.168.50.117`), y agregando un timeout de 8s con `AbortController` en `apiService.js`.
+- **Contenido Solapado con Notch / Advertencia SafeAreaView:** Se migró toda la navegación y pantallas al componente `SafeAreaView` de `react-native-safe-area-context`.
 
 ## 3. Preferencias de Trabajo del Desarrollador
 - **Metodología Paso a Paso:** Trabajar una sola tarea a la vez del backlog de ClickUp.
 - **Familiaridad y Productividad:** Mantener la estética, convenciones en español y simplicidad de `DIRPOLES-4`.
-- **Lenguaje Frontend Móvil:** JavaScript puro (`.js` / `.jsx`) en React Native + Expo SDK 58, sin TypeScript, por preferencia de comprensión y mantenibilidad del desarrollador.
+- **Lenguaje Frontend Móvil:** JavaScript puro (`.js` / `.jsx`) en React Native + Expo SDK 58, sin TypeScript.
+- **Diseño Móvil:** Sobrio, claro y balanceado. No convertir todo en tarjetas, no abusar de sombras pesadas ni degradados invasivos, y nunca usar emojis como iconos funcionales.
 
 ## 4. Estado Actual del Plan
 
@@ -36,11 +52,14 @@ Sprint 0: Cimientos, DB & Auth (List ID: 901718120307) -- 100% COMPLETADO 🎉
   [x] T0.4: Servicio de Autenticación, Hashes y Tokens Bearer (ID: 86e3zm74t)  <-- COMPLETADA
   [x] T0.5: Setup de App Móvil Expo (SDK 58) y Navegación por Roles (ID: 86e3zm74u)  <-- COMPLETADA
 
-Sprint 1: Núcleo Deportivo & Familias (List ID: 901718120308)
+Sprint 1: Núcleo Deportivo & Familias (List ID: 901718120308) -- SPRINT ACTIVO 🚀
   [ ] T1.1: Migraciones: Categorías, Equipos, Jugadores y Representantes (ID: 86e3zm74w)  <-- SIGUIENTE TAREA
   [ ] T1.2: Repositorios PDO y Servicios de Fichas Deportivas (ID: 86e3zm74y)
   [ ] T1.3: Endpoints REST Deportivos (ID: 86e3zm74z)
   [ ] T1.4: UI Móvil: Directorio de Jugadores y Búsqueda (ID: 86e3zm750)
 
-Sprints 2 a 5: Pendientes en ClickUp
+Sprint 2: Cancha Offline-First (Asistencia) (List ID: 901718120309) -- PENDIENTE
+Sprint 3: Obligaciones & Pronto-Pago (List ID: 901718120310) -- PENDIENTE
+Sprint 4: Pagos Multihijo & Tasa BCV (List ID: 901718120311) -- PENDIENTE
+Sprint 5: Gastos & Piloto Obelisco FC (List ID: 901718120313) -- PENDIENTE
 ```
