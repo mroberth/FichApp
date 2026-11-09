@@ -53,8 +53,8 @@ Sprint 0: Cimientos, DB & Auth (List ID: 901718120307) -- 100% COMPLETADO 🎉
   [x] T0.5: Setup de App Móvil Expo (SDK 58) y Navegación por Roles (ID: 86e3zm74u)  <-- COMPLETADA
 
 Sprint 1: Núcleo Deportivo & Familias (List ID: 901718120308) -- SPRINT ACTIVO 🚀
-  [ ] T1.1: Migraciones: Categorías, Equipos, Jugadores y Representantes (ID: 86e3zm74w)  <-- SIGUIENTE TAREA
-  [ ] T1.2: Repositorios PDO y Servicios de Fichas Deportivas (ID: 86e3zm74y)
+  [x] T1.1: Migraciones: Categorías, Equipos, Jugadores y Representantes (ID: 86e3zm74w)  <-- COMPLETADA
+  [ ] T1.2: Repositorios PDO y Servicios de Fichas Deportivas (ID: 86e3zm74y)  <-- SIGUIENTE TAREA
   [ ] T1.3: Endpoints REST Deportivos (ID: 86e3zm74z)
   [ ] T1.4: UI Móvil: Directorio de Jugadores y Búsqueda (ID: 86e3zm750)
 
