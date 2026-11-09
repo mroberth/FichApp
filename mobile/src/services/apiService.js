@@ -17,11 +17,19 @@ const solicitar = async (ruta, opciones = {}, token = null) => {
     cabeceras['Authorization'] = `Bearer ${token}`;
   }
 
+  // Timeout preventivo de 8 segundos para evitar spinners infinitos
+  const controlador = new AbortController();
+  const temporizador = setTimeout(() => {
+    controlador.abort();
+  }, 8000);
+
   try {
     const respuesta = await fetch(url, {
       ...opciones,
       headers: cabeceras,
+      signal: controlador.signal,
     });
+    clearTimeout(temporizador);
 
     const texto = await respuesta.text();
     let json = null;
@@ -29,11 +37,11 @@ const solicitar = async (ruta, opciones = {}, token = null) => {
     try {
       json = texto ? JSON.parse(texto) : null;
     } catch {
-      throw new Error(`Respuesta del servidor no es JSON: ${texto.substring(0, 100)}`);
+      throw new Error(`Respuesta no esperada del servidor (${respuesta.status})`);
     }
 
     if (!respuesta.ok || (json && json.exito === false)) {
-      const mensaje = json?.error?.mensaje || `Error en la solicitud HTTP (${respuesta.status})`;
+      const mensaje = json?.error?.mensaje || `Error en la solicitud (${respuesta.status})`;
       const error = new Error(mensaje);
       error.codigo = json?.error?.codigo || 'HTTP_ERROR';
       error.estado = json?.error?.estado || respuesta.status;
@@ -43,8 +51,17 @@ const solicitar = async (ruta, opciones = {}, token = null) => {
 
     return json?.datos;
   } catch (err) {
+    clearTimeout(temporizador);
+
+    if (err.name === 'AbortError') {
+      const errorTimeout = new Error(`Tiempo de espera agotado (8s). No se pudo conectar a ${url}. Verifica que la laptop y el celular estén en el mismo Wi-Fi.`);
+      errorTimeout.codigo = 'TIMEOUT';
+      errorTimeout.estado = 0;
+      throw errorTimeout;
+    }
+
     if (err.message && err.message.includes('Network request failed')) {
-      const errorRed = new Error('No se pudo conectar con el servidor. Verifica que el backend esté ejecutándose en http://localhost:8000.');
+      const errorRed = new Error(`No se pudo conectar a ${url}. Verifica que el backend PHP esté corriendo en tu laptop.`);
       errorRed.codigo = 'NETWORK_ERROR';
       errorRed.estado = 0;
       throw errorRed;

@@ -1,22 +1,34 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 /**
- * Configuración de red para el backend de FichApp.
+ * Configuración dinámica de red para FichApp.
  * 
- * - Emulador Android: usa 'http://10.0.2.2:8000' (apunta al localhost de la laptop).
- * - Navegador Web / Simulador iOS: usa 'http://localhost:8000'.
- * - Teléfono físico con Expo Go: Si estás en la misma red Wi-Fi, puedes colocar
- *   la IP local de tu laptop en IP_SERVIDOR_MANUAL (ej: '192.168.1.100').
+ * En teléfonos físicos con Expo Go (en la misma red Wi-Fi):
+ * - Extrae automáticamente la IP de la laptop desde la conexión de Metro (Constants.expoConfig.hostUri).
+ * - O usa la IP Wi-Fi de tu laptop Fedora: 192.168.50.117.
+ * 
+ * En emulador Android: usa 10.0.2.2.
+ * En Web / Local: usa localhost.
  */
-const IP_SERVIDOR_MANUAL = null;
-
 const OBTENER_BASE_URL = () => {
-  if (IP_SERVIDOR_MANUAL) {
-    return `http://${IP_SERVIDOR_MANUAL}:8000`;
+  // 1. IP del servidor Metro de Expo (cuando se conecta desde Expo Go en celular)
+  const hostUri = Constants.expoConfig?.hostUri;
+  if (hostUri) {
+    const ip = hostUri.split(':')[0];
+    if (ip && ip !== 'localhost' && ip !== '127.0.0.1') {
+      return `http://${ip}:8000`;
+    }
   }
-  if (Platform.OS === 'android') {
-    return 'http://10.0.2.2:8000';
+
+  // 2. IP local de la laptop en la red Wi-Fi (Fedora 44)
+  const IP_WIFI_LAPTOP = '192.168.50.117';
+
+  // En dispositivos móviles (físicos o emuladores)
+  if (Platform.OS === 'android' || Platform.OS === 'ios') {
+    return `http://${IP_WIFI_LAPTOP}:8000`;
   }
+
   return 'http://localhost:8000';
 };
 
