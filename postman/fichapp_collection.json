@@ -1,0 +1,121 @@
+{
+  "info": {
+    "name": "FichApp API (Local)",
+    "description": "Colección de endpoints para desarrollo local de FichApp en Fedora 44",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Verificación Inicial",
+      "item": [
+        {
+          "name": "GET Ping de Salud",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ping",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ping"]
+            }
+          }
+        },
+        {
+          "name": "GET Estado del Sistema",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/estado",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "estado"]
+            }
+          }
+        },
+        {
+          "name": "GET Prueba Parámetro Dinámico {id}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/prueba/obelisco-123",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "prueba", "obelisco-123"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Multi-Tenant y Seguridad",
+      "item": [
+        {
+          "name": "GET Tenant Verificar (Con Header X-Academia-Id)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Academia-Id",
+                "value": "obelisco-fc",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tenant/verificar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tenant", "verificar"]
+            }
+          }
+        },
+        {
+          "name": "GET Tenant Verificar (Sin Header - Espera 403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tenant/verificar",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "tenant", "verificar"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Pruebas de Error (Contrato JSON)",
+      "item": [
+        {
+          "name": "GET Ruta Inexistente (Espera 404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ruta-no-existe",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ruta-no-existe"]
+            }
+          }
+        },
+        {
+          "name": "POST Método No Permitido (Espera 405)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/ping",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ping"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
