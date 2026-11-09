@@ -24,16 +24,23 @@ Guarda lo que no queremos volver a discutir ni explicar entre sesiones.
 ## 3. Preferencias de Trabajo del Desarrollador
 - **Metodología Paso a Paso:** Trabajar una sola tarea a la vez del backlog de ClickUp.
 - **Familiaridad y Productividad:** Mantener la estética, convenciones en español y simplicidad de `DIRPOLES-4`.
+- **Lenguaje Frontend Móvil:** JavaScript puro (`.js` / `.jsx`) en React Native + Expo SDK 58, sin TypeScript, por preferencia de comprensión y mantenibilidad del desarrollador.
 
 ## 4. Estado Actual del Plan
 
 ```
-Sprint 0: Cimientos, DB & Auth (List ID: 901718120307)
+Sprint 0: Cimientos, DB & Auth (List ID: 901718120307) -- 100% COMPLETADO 🎉
   [x] T0.1: Setup PHP 8.5 puro, PSR-4 y Conexión PDO (ID: 86e3zm74p)  <-- COMPLETADA
   [x] T0.2: Router HTTP Ligero y Middlewares de Contexto (ID: 86e3zm74q)  <-- COMPLETADA
   [x] T0.3: Migraciones Base PostgreSQL: Tenants, Usuarios y Auditoría (ID: 86e3zm74r)  <-- COMPLETADA
   [x] T0.4: Servicio de Autenticación, Hashes y Tokens Bearer (ID: 86e3zm74t)  <-- COMPLETADA
-  [ ] T0.5: Setup de App Móvil Expo y Navegación por Roles (ID: 86e3zm74u)  <-- SIGUIENTE TAREA
+  [x] T0.5: Setup de App Móvil Expo (SDK 58) y Navegación por Roles (ID: 86e3zm74u)  <-- COMPLETADA
 
-Sprints 1 a 5: Pendientes en ClickUp
+Sprint 1: Núcleo Deportivo & Familias (List ID: 901718120308)
+  [ ] T1.1: Migraciones: Categorías, Equipos, Jugadores y Representantes (ID: 86e3zm74w)  <-- SIGUIENTE TAREA
+  [ ] T1.2: Repositorios PDO y Servicios de Fichas Deportivas (ID: 86e3zm74y)
+  [ ] T1.3: Endpoints REST Deportivos (ID: 86e3zm74z)
+  [ ] T1.4: UI Móvil: Directorio de Jugadores y Búsqueda (ID: 86e3zm750)
+
+Sprints 2 a 5: Pendientes en ClickUp
 ```

@@ -62,5 +62,5 @@ El backend implementa una arquitectura desacoplada, estandarizada en español e 
 │   │   └── routes/                      # Rutas de la API (api.php)
 │   ├── migrations/                      # Scripts SQL versionados para PostgreSQL
 │   └── tests/                           # Tests unitarios e integración (PHPUnit)
-└── mobile/                              # App móvil en React Native + Expo SDK 52
+└── mobile/                              # App móvil en React Native + Expo SDK 58
 ```
