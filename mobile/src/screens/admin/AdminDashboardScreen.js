@@ -7,11 +7,23 @@ import {
   ScrollView,
   StatusBar,
   Alert,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  Users,
+  CreditCard,
+  CalendarCheck,
+  FileText,
+  LogOut,
+  Wifi,
+  WifiOff,
+  Building2,
+  ChevronRight,
+  ShieldCheck,
+} from 'lucide-react-native';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/apiService';
+import { COLORES, ESPACIADO, RADIOS, TIPOGRAFIA, SOMBRAS } from '../../theme';
 
 export default function AdminDashboardScreen() {
   const { usuario, cerrarSesion } = useAuth();
@@ -32,7 +44,7 @@ export default function AdminDashboardScreen() {
   const confirmarSalida = () => {
     Alert.alert(
       'Cerrar Sesión',
-      '¿Estás seguro de que deseas salir del sistema?',
+      '¿Deseas salir del sistema?',
       [
         { text: 'Cancelar', style: 'cancel' },
         { text: 'Cerrar Sesión', style: 'destructive', onPress: cerrarSesion },
@@ -40,85 +52,150 @@ export default function AdminDashboardScreen() {
     );
   };
 
+  const modulos = [
+    {
+      id: 'jugadores',
+      titulo: 'Jugadores y Familias',
+      descripcion: 'Padrón de atletas, representantes y fichas médicas',
+      icono: Users,
+      sprint: 'Sprint 1',
+    },
+    {
+      id: 'cobranzas',
+      titulo: 'Cobranzas y Pagos',
+      descripcion: 'Registro de pagos familiares y conversión oficial BCV',
+      icono: CreditCard,
+      sprint: 'Sprint 4',
+    },
+    {
+      id: 'obligaciones',
+      titulo: 'Obligaciones y Cuotas',
+      descripcion: 'Generación mensual y políticas de pronto-pago',
+      icono: CalendarCheck,
+      sprint: 'Sprint 3',
+    },
+    {
+      id: 'reportes',
+      titulo: 'Cuadre Diario y Finanzas',
+      descripcion: 'Balance consolidado de caja en USD y VES',
+      icono: FileText,
+      sprint: 'Sprint 5',
+    },
+  ];
+
   return (
     <SafeAreaView style={styles.contenedor}>
-      <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-      <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Cabecera del Administrador */}
+      <StatusBar barStyle="dark-content" backgroundColor={COLORES.surfaceBackground} />
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Cabecera del Tenant */}
         <View style={styles.cabecera}>
-          <View>
-            <Text style={styles.academiaNombre}>
-              ⚽ {usuario?.academia?.nombre || 'Obelisco FC'}
-            </Text>
+          <View style={styles.cabeceraInfo}>
+            <View style={styles.organizacionFila}>
+              <Building2 size={16} color={COLORES.brandPrimary} />
+              <Text style={styles.academiaNombre}>
+                {usuario?.academia?.nombre || 'Obelisco FC'}
+              </Text>
+            </View>
             <Text style={styles.usuarioNombre}>{usuario?.nombre}</Text>
             <View style={styles.rolBadge}>
-              <Text style={styles.rolTexto}>DIRECTOR / ADMINISTRADOR</Text>
+              <ShieldCheck size={12} color={COLORES.brandPrimary} />
+              <Text style={styles.rolTexto}>ADMINISTRADOR</Text>
             </View>
           </View>
 
-          <TouchableOpacity style={styles.botonSalir} onPress={confirmarSalida}>
+          <TouchableOpacity
+            style={styles.botonSalir}
+            onPress={confirmarSalida}
+            activeOpacity={0.7}
+            accessibilityLabel="Cerrar sesión"
+          >
+            <LogOut size={16} color={COLORES.danger} />
             <Text style={styles.botonSalirTexto}>Salir</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Estado de conexión con el Backend */}
+        {/* Estado de Enlace con el Servidor */}
         <View style={styles.cajaEstado}>
+          <View style={styles.estadoIzquierda}>
+            {conexionBackend === 'conectado' ? (
+              <Wifi size={16} color={COLORES.success} />
+            ) : (
+              <WifiOff size={16} color={COLORES.warning} />
+            )}
+            <Text style={styles.textoEstado}>
+              {conexionBackend === 'conectado'
+                ? 'Conectado al servidor de FichApp'
+                : conexionBackend === 'desconectado'
+                ? 'Sin conexión con el servidor (192.168.50.117:8000)'
+                : 'Comprobando conectividad...'}
+            </Text>
+          </View>
           <View
             style={[
               styles.puntoConexion,
               conexionBackend === 'conectado' && styles.puntoVerde,
-              conexionBackend === 'desconectado' && styles.puntoRojo,
+              conexionBackend === 'desconectado' && styles.puntoNaranja,
             ]}
           />
-          <Text style={styles.textoEstado}>
-            {conexionBackend === 'conectado'
-              ? 'API Backend conectada y operativa'
-              : conexionBackend === 'desconectado'
-              ? 'Sin conexión con el backend (127.0.0.1:8000)'
-              : 'Verificando enlace con API...'}
-          </Text>
         </View>
 
-        {/* Resumen Operativo */}
-        <Text style={styles.seccionTitulo}>Módulos Administrativos (Sprint 1 a 5)</Text>
-
-        <View style={styles.grid}>
-          <View style={styles.tarjeta}>
-            <Text style={styles.tarjetaIcono}>👥</Text>
-            <Text style={styles.tarjetaTitulo}>Jugadores & Familias</Text>
-            <Text style={styles.tarjetaSubtitulo}>Directorio, fichas y categorías</Text>
-            <View style={styles.badgeSprint}><Text style={styles.badgeSprintTexto}>Sprint 1</Text></View>
-          </View>
-
-          <View style={styles.tarjeta}>
-            <Text style={styles.tarjetaIcono}>💵</Text>
-            <Text style={styles.tarjetaTitulo}>Cobranzas & Pagos</Text>
-            <Text style={styles.tarjetaSubtitulo}>Pagos familiares y tasa BCV</Text>
-            <View style={styles.badgeSprint}><Text style={styles.badgeSprintTexto}>Sprint 4</Text></View>
-          </View>
-
-          <View style={styles.tarjeta}>
-            <Text style={styles.tarjetaIcono}>📊</Text>
-            <Text style={styles.tarjetaTitulo}>Obligaciones & Cuotas</Text>
-            <Text style={styles.tarjetaSubtitulo}>Generación masiva y pronto-pago</Text>
-            <View style={styles.badgeSprint}><Text style={styles.badgeSprintTexto}>Sprint 3</Text></View>
-          </View>
-
-          <View style={styles.tarjeta}>
-            <Text style={styles.tarjetaIcono}>📑</Text>
-            <Text style={styles.tarjetaTitulo}>Cuadre Diario & Caja</Text>
-            <Text style={styles.tarjetaSubtitulo}>Reportes de ingresos en USD y VES</Text>
-            <View style={styles.badgeSprint}><Text style={styles.badgeSprintTexto}>Sprint 5</Text></View>
-          </View>
+        {/* Sección de Módulos Operativos */}
+        <View style={styles.seccionEncabezado}>
+          <Text style={styles.seccionTitulo}>Módulos de Gestión</Text>
+          <Text style={styles.seccionSubtitulo}>Funcionalidades activas del roadmap</Text>
         </View>
 
-        {/* Información Técnica del Usuario */}
-        <View style={styles.cajaInfo}>
-          <Text style={styles.cajaInfoTitulo}>Información de la Cuenta</Text>
-          <Text style={styles.cajaInfoItem}>• ID Usuario: {usuario?.id}</Text>
-          <Text style={styles.cajaInfoItem}>• Acceso: {usuario?.identificador_acceso}</Text>
-          <Text style={styles.cajaInfoItem}>• Correo: {usuario?.correo || 'No registrado'}</Text>
-          <Text style={styles.cajaInfoItem}>• ID Academia: {usuario?.academia_id}</Text>
+        <View style={styles.listaModulos}>
+          {modulos.map((m, idx) => {
+            const Icono = m.icono;
+            return (
+              <View
+                key={m.id}
+                style={[
+                  styles.moduloItem,
+                  idx === modulos.length - 1 && styles.moduloItemUltimo,
+                ]}
+              >
+                <View style={styles.moduloIconoContenedor}>
+                  <Icono size={20} color={COLORES.brandPrimary} />
+                </View>
+
+                <View style={styles.moduloContenido}>
+                  <View style={styles.moduloTituloFila}>
+                    <Text style={styles.moduloTitulo}>{m.titulo}</Text>
+                    <View style={styles.badgeSprint}>
+                      <Text style={styles.badgeSprintTexto}>{m.sprint}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.moduloDescripcion}>{m.descripcion}</Text>
+                </View>
+
+                <ChevronRight size={18} color={COLORES.textMuted} />
+              </View>
+            );
+          })}
+        </View>
+
+        {/* Ficha Resumen de Cuenta */}
+        <View style={styles.fichaCuenta}>
+          <Text style={styles.fichaTitulo}>Detalles de la Cuenta</Text>
+          <View style={styles.fichaFila}>
+            <Text style={styles.fichaLabel}>Usuario</Text>
+            <Text style={styles.fichaValor}>{usuario?.identificador_acceso}</Text>
+          </View>
+          <View style={styles.fichaFila}>
+            <Text style={styles.fichaLabel}>Correo</Text>
+            <Text style={styles.fichaValor}>{usuario?.correo || 'No asignado'}</Text>
+          </View>
+          <View style={styles.fichaFila}>
+            <Text style={styles.fichaLabel}>ID Academia</Text>
+            <Text style={styles.fichaValorMono} numberOfLines={1} ellipsizeMode="middle">
+              {usuario?.academia_id}
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -128,148 +205,213 @@ export default function AdminDashboardScreen() {
 const styles = StyleSheet.create({
   contenedor: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORES.surfaceBackground,
   },
   scroll: {
-    padding: 20,
+    paddingHorizontal: ESPACIADO.space5,
+    paddingVertical: ESPACIADO.space4,
   },
   cabecera: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    backgroundColor: '#1e293b',
-    padding: 18,
-    borderRadius: 14,
+    backgroundColor: COLORES.surfaceDefault,
+    padding: ESPACIADO.space4,
+    borderRadius: RADIOS.lg,
     borderWidth: 1,
-    borderColor: '#334155',
-    marginBottom: 16,
+    borderColor: COLORES.borderDefault,
+    marginBottom: ESPACIADO.space3,
+    ...SOMBRAS.sutil,
+  },
+  cabeceraInfo: {
+    flex: 1,
+  },
+  organizacionFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: ESPACIADO.space2,
+    marginBottom: ESPACIADO.space1,
   },
   academiaNombre: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#38bdf8',
+    ...TIPOGRAFIA.heading3,
+    color: COLORES.brandPrimary,
   },
   usuarioNombre: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginTop: 4,
+    ...TIPOGRAFIA.bodyMedium,
+    color: COLORES.textPrimary,
   },
   rolBadge: {
-    backgroundColor: '#3b82f6',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORES.brandPrimarySubtle,
     alignSelf: 'flex-start',
-    paddingHorizontal: 8,
+    paddingHorizontal: ESPACIADO.space2,
     paddingVertical: 3,
-    borderRadius: 6,
-    marginTop: 6,
+    borderRadius: RADIOS.sm,
+    marginTop: ESPACIADO.space2,
   },
   rolTexto: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '800',
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORES.brandPrimary,
     letterSpacing: 0.5,
   },
   botonSalir: {
-    backgroundColor: '#dc2626',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: ESPACIADO.space3,
+    paddingVertical: ESPACIADO.space2,
+    borderRadius: RADIOS.md,
+    borderWidth: 1,
+    borderColor: COLORES.dangerBg,
+    backgroundColor: COLORES.dangerBg,
   },
   botonSalirTexto: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.danger,
+    fontWeight: '600',
   },
   cajaEstado: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1e293b',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    backgroundColor: COLORES.surfaceDefault,
+    paddingHorizontal: ESPACIADO.space4,
+    paddingVertical: ESPACIADO.space3,
+    borderRadius: RADIOS.md,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: COLORES.borderDefault,
+    marginBottom: ESPACIADO.space5,
+  },
+  estadoIzquierda: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: ESPACIADO.space2,
+    flex: 1,
   },
   puntoConexion: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#eab308',
-    marginRight: 10,
+    width: 8,
+    height: 8,
+    borderRadius: RADIOS.full,
+    backgroundColor: COLORES.textMuted,
   },
   puntoVerde: {
-    backgroundColor: '#22c55e',
+    backgroundColor: COLORES.success,
   },
-  puntoRojo: {
-    backgroundColor: '#ef4444',
+  puntoNaranja: {
+    backgroundColor: COLORES.warning,
   },
   textoEstado: {
-    color: '#cbd5e1',
-    fontSize: 13,
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textSecondary,
     fontWeight: '500',
   },
+  seccionEncabezado: {
+    marginBottom: ESPACIADO.space3,
+  },
   seccionTitulo: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#f8fafc',
-    marginBottom: 14,
+    ...TIPOGRAFIA.heading3,
+    color: COLORES.textPrimary,
   },
-  grid: {
-    gap: 12,
-    marginBottom: 24,
-  },
-  tarjeta: {
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  tarjetaIcono: {
-    fontSize: 26,
-    marginBottom: 6,
-  },
-  tarjetaTitulo: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  tarjetaSubtitulo: {
-    fontSize: 13,
-    color: '#94a3b8',
+  seccionSubtitulo: {
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textSecondary,
     marginTop: 2,
-    marginBottom: 10,
   },
-  badgeSprint: {
-    backgroundColor: '#334155',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+  listaModulos: {
+    backgroundColor: COLORES.surfaceDefault,
+    borderRadius: RADIOS.lg,
+    borderWidth: 1,
+    borderColor: COLORES.borderDefault,
+    marginBottom: ESPACIADO.space5,
+    overflow: 'hidden',
+    ...SOMBRAS.sutil,
   },
-  badgeSprintTexto: {
-    color: '#38bdf8',
-    fontSize: 11,
+  moduloItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: ESPACIADO.space4,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORES.borderSubtle,
+    gap: ESPACIADO.space3,
+  },
+  moduloItemUltimo: {
+    borderBottomWidth: 0,
+  },
+  moduloIconoContenedor: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIOS.md,
+    backgroundColor: COLORES.surfaceSubtle,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  moduloContenido: {
+    flex: 1,
+  },
+  moduloTituloFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  moduloTitulo: {
+    ...TIPOGRAFIA.bodyMedium,
+    color: COLORES.textPrimary,
     fontWeight: '600',
   },
-  cajaInfo: {
-    backgroundColor: '#1e293b',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#334155',
+  moduloDescripcion: {
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textSecondary,
   },
-  cajaInfoTitulo: {
-    fontSize: 13,
+  badgeSprint: {
+    backgroundColor: COLORES.brandAccentSubtle,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: RADIOS.sm,
+  },
+  badgeSprintTexto: {
+    fontSize: 10,
     fontWeight: '700',
-    color: '#94a3b8',
-    marginBottom: 8,
-    textTransform: 'uppercase',
+    color: COLORES.brandAccentDark,
   },
-  cajaInfoItem: {
-    fontSize: 12,
-    color: '#cbd5e1',
-    lineHeight: 20,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+  fichaCuenta: {
+    backgroundColor: COLORES.surfaceDefault,
+    borderRadius: RADIOS.lg,
+    borderWidth: 1,
+    borderColor: COLORES.borderDefault,
+    padding: ESPACIADO.space4,
+    marginBottom: ESPACIADO.space4,
+  },
+  fichaTitulo: {
+    ...TIPOGRAFIA.label,
+    color: COLORES.textMuted,
+    textTransform: 'uppercase',
+    marginBottom: ESPACIADO.space3,
+  },
+  fichaFila: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: ESPACIADO.space2,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORES.borderSubtle,
+  },
+  fichaLabel: {
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textSecondary,
+  },
+  fichaValor: {
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textPrimary,
+    fontWeight: '600',
+  },
+  fichaValorMono: {
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textPrimary,
+    fontFamily: 'monospace',
+    maxWidth: 160,
   },
 });

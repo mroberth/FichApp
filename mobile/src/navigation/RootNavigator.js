@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
+import { COLORES, TIPOGRAFIA } from '../theme';
 
 // Pantallas
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -17,7 +18,7 @@ export default function RootNavigator() {
   if (cargando) {
     return (
       <View style={styles.pantallaCarga}>
-        <ActivityIndicator size="large" color="#38bdf8" />
+        <ActivityIndicator size="large" color={COLORES.brandPrimary} />
         <Text style={styles.textoCarga}>Iniciando FichApp...</Text>
       </View>
     );
@@ -47,14 +48,13 @@ export default function RootNavigator() {
 const styles = StyleSheet.create({
   pantallaCarga: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORES.surfaceBackground,
     justifyContent: 'center',
     alignItems: 'center',
   },
   textoCarga: {
-    color: '#94a3b8',
+    ...TIPOGRAFIA.bodyMedium,
+    color: COLORES.textSecondary,
     marginTop: 14,
-    fontSize: 14,
-    fontWeight: '600',
   },
 });

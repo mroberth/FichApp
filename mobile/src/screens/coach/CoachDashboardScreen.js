@@ -9,8 +9,21 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  CheckCircle2,
+  Users,
+  RefreshCw,
+  LogOut,
+  Wifi,
+  WifiOff,
+  Building2,
+  ChevronRight,
+  Zap,
+  Activity,
+} from 'lucide-react-native';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/apiService';
+import { COLORES, ESPACIADO, RADIOS, TIPOGRAFIA, SOMBRAS } from '../../theme';
 
 export default function CoachDashboardScreen() {
   const { usuario, cerrarSesion } = useAuth();
@@ -39,42 +52,94 @@ export default function CoachDashboardScreen() {
     );
   };
 
+  const accionesEntrenador = [
+    {
+      id: 'asistencia',
+      titulo: 'Tomar Asistencia en Cancha',
+      descripcion: 'Registro rápido táctil por jugador (Presente / Ausente)',
+      icono: CheckCircle2,
+      sprint: 'Sprint 2',
+      destacado: true,
+    },
+    {
+      id: 'equipos',
+      titulo: 'Mis Equipos y Categorías',
+      descripcion: 'Plantilla de atletas convocados y fichas médicas',
+      icono: Users,
+      sprint: 'Sprint 1',
+      destacado: false,
+    },
+    {
+      id: 'sincronizacion',
+      titulo: 'Sincronizar Lotes de Cancha',
+      descripcion: 'Envío seguro de asistencias registradas sin conexión',
+      icono: RefreshCw,
+      sprint: 'Sprint 2',
+      destacado: false,
+    },
+  ];
+
   return (
     <SafeAreaView style={styles.contenedor}>
-      <StatusBar barStyle="light-content" backgroundColor="#064e3b" />
-      <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Cabecera Deportiva */}
+      <StatusBar barStyle="dark-content" backgroundColor={COLORES.surfaceBackground} />
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Cabecera del Entrenador */}
         <View style={styles.cabecera}>
-          <View>
-            <Text style={styles.academiaNombre}>
-              ⚽ {usuario?.academia?.nombre || 'Obelisco FC'}
-            </Text>
+          <View style={styles.cabeceraInfo}>
+            <View style={styles.organizacionFila}>
+              <Building2 size={16} color={COLORES.brandPrimary} />
+              <Text style={styles.academiaNombre}>
+                {usuario?.academia?.nombre || 'Obelisco FC'}
+              </Text>
+            </View>
             <Text style={styles.usuarioNombre}>{usuario?.nombre}</Text>
             <View style={styles.rolBadge}>
+              <Activity size={12} color={COLORES.brandPrimary} />
               <Text style={styles.rolTexto}>CUERPO TÉCNICO / ENTRENADOR</Text>
             </View>
           </View>
 
-          <TouchableOpacity style={styles.botonSalir} onPress={confirmarSalida}>
+          <TouchableOpacity
+            style={styles.botonSalir}
+            onPress={confirmarSalida}
+            activeOpacity={0.7}
+            accessibilityLabel="Cerrar sesión"
+          >
+            <LogOut size={16} color={COLORES.danger} />
             <Text style={styles.botonSalirTexto}>Salir</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Banner Modo Cancha Offline (Sprint 2) */}
+        {/* Tarjeta de Modo Cancha Offline (Sprint 2) */}
         <View style={styles.bannerCancha}>
-          <View style={styles.bannerIcono}>
-            <Text style={{ fontSize: 24 }}>⚡</Text>
+          <View style={styles.bannerIconoContenedor}>
+            <Zap size={20} color={COLORES.brandPrimary} strokeWidth={2.4} />
           </View>
-          <View style={styles.bannerContenido}>
+          <View style={styles.bannerTextoContenedor}>
             <Text style={styles.bannerTitulo}>Modo Cancha (Offline-First)</Text>
-            <Text style={styles.bannerTexto}>
-              Tu sesión está almacenada de forma segura. Podrás tomar asistencia sin señal en el Sprint 2.
+            <Text style={styles.bannerDescripcion}>
+              Sesión guardada en almacenamiento seguro. En el Sprint 2 podrás registrar asistencia directamente en el campo sin requerir señal de internet.
             </Text>
           </View>
         </View>
 
-        {/* Estado de sincronización */}
+        {/* Estado de Red */}
         <View style={styles.cajaEstado}>
+          <View style={styles.estadoIzquierda}>
+            {conexionBackend === 'conectado' ? (
+              <Wifi size={16} color={COLORES.success} />
+            ) : (
+              <WifiOff size={16} color={COLORES.warning} />
+            )}
+            <Text style={styles.textoEstado}>
+              {conexionBackend === 'conectado'
+                ? 'Conectado al servidor de FichApp'
+                : 'Modo sin conexión • Listo para operar localmente'}
+            </Text>
+          </View>
           <View
             style={[
               styles.puntoConexion,
@@ -82,37 +147,66 @@ export default function CoachDashboardScreen() {
               conexionBackend === 'desconectado' && styles.puntoNaranja,
             ]}
           />
-          <Text style={styles.textoEstado}>
-            {conexionBackend === 'conectado'
-              ? 'Conectado al servidor principal'
-              : 'Modo sin conexión o servidor local en espera'}
-          </Text>
         </View>
 
-        {/* Funciones del Entrenador */}
-        <Text style={styles.seccionTitulo}>Herramientas de Cancha</Text>
+        {/* Herramientas de Cancha */}
+        <View style={styles.seccionEncabezado}>
+          <Text style={styles.seccionTitulo}>Herramientas de Cancha</Text>
+          <Text style={styles.seccionSubtitulo}>Acciones rápidas para entrenamientos y partidos</Text>
+        </View>
 
-        <View style={styles.grid}>
-          <TouchableOpacity style={styles.tarjetaAccion} activeOpacity={0.8}>
-            <Text style={styles.tarjetaIcono}>📋</Text>
-            <Text style={styles.tarjetaTitulo}>Tomar Asistencia Rápida</Text>
-            <Text style={styles.tarjetaSubtitulo}>Registro táctil por jugador (Presente / Ausente)</Text>
-            <View style={styles.badgeSprint}><Text style={styles.badgeSprintTexto}>Sprint 2</Text></View>
-          </TouchableOpacity>
+        <View style={styles.listaAcciones}>
+          {accionesEntrenador.map((a, idx) => {
+            const Icono = a.icono;
+            return (
+              <TouchableOpacity
+                key={a.id}
+                style={[
+                  styles.accionItem,
+                  idx === accionesEntrenador.length - 1 && styles.accionItemUltimo,
+                  a.destacado && styles.accionItemDestacado,
+                ]}
+                activeOpacity={0.7}
+              >
+                <View
+                  style={[
+                    styles.accionIconoContenedor,
+                    a.destacado && styles.accionIconoContenedorDestacado,
+                  ]}
+                >
+                  <Icono
+                    size={20}
+                    color={a.destacado ? COLORES.brandPrimaryDark : COLORES.brandPrimary}
+                    strokeWidth={2.2}
+                  />
+                </View>
 
-          <TouchableOpacity style={styles.tarjetaAccion} activeOpacity={0.8}>
-            <Text style={styles.tarjetaIcono}>👥</Text>
-            <Text style={styles.tarjetaTitulo}>Mis Equipos & Categorías</Text>
-            <Text style={styles.tarjetaSubtitulo}>Listado de atletas convocados y fichas médicas</Text>
-            <View style={styles.badgeSprint}><Text style={styles.badgeSprintTexto}>Sprint 1</Text></View>
-          </TouchableOpacity>
+                <View style={styles.accionContenido}>
+                  <View style={styles.accionTituloFila}>
+                    <Text style={styles.accionTitulo}>{a.titulo}</Text>
+                    <View
+                      style={[
+                        styles.badgeSprint,
+                        a.destacado && styles.badgeSprintDestacado,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.badgeSprintTexto,
+                          a.destacado && styles.badgeSprintTextoDestacado,
+                        ]}
+                      >
+                        {a.sprint}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={styles.accionDescripcion}>{a.descripcion}</Text>
+                </View>
 
-          <TouchableOpacity style={styles.tarjetaAccion} activeOpacity={0.8}>
-            <Text style={styles.tarjetaIcono}>🔄</Text>
-            <Text style={styles.tarjetaTitulo}>Sincronizar Lotes Pendientes</Text>
-            <Text style={styles.tarjetaSubtitulo}>Envío de asistencias tomadas sin internet</Text>
-            <View style={styles.badgeSprint}><Text style={styles.badgeSprintTexto}>Sprint 2</Text></View>
-          </TouchableOpacity>
+                <ChevronRight size={18} color={COLORES.textMuted} />
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -122,154 +216,223 @@ export default function CoachDashboardScreen() {
 const styles = StyleSheet.create({
   contenedor: {
     flex: 1,
-    backgroundColor: '#022c22', // Fondo verde oscuro deportivo
+    backgroundColor: COLORES.surfaceBackground,
   },
   scroll: {
-    padding: 20,
+    paddingHorizontal: ESPACIADO.space5,
+    paddingVertical: ESPACIADO.space4,
   },
   cabecera: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    backgroundColor: '#064e3b',
-    padding: 18,
-    borderRadius: 14,
+    backgroundColor: COLORES.surfaceDefault,
+    padding: ESPACIADO.space4,
+    borderRadius: RADIOS.lg,
     borderWidth: 1,
-    borderColor: '#047857',
-    marginBottom: 16,
+    borderColor: COLORES.borderDefault,
+    marginBottom: ESPACIADO.space3,
+    ...SOMBRAS.sutil,
+  },
+  cabeceraInfo: {
+    flex: 1,
+  },
+  organizacionFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: ESPACIADO.space2,
+    marginBottom: ESPACIADO.space1,
   },
   academiaNombre: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#34d399',
+    ...TIPOGRAFIA.heading3,
+    color: COLORES.brandPrimary,
   },
   usuarioNombre: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginTop: 4,
+    ...TIPOGRAFIA.bodyMedium,
+    color: COLORES.textPrimary,
   },
   rolBadge: {
-    backgroundColor: '#059669',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORES.brandPrimarySubtle,
     alignSelf: 'flex-start',
-    paddingHorizontal: 8,
+    paddingHorizontal: ESPACIADO.space2,
     paddingVertical: 3,
-    borderRadius: 6,
-    marginTop: 6,
+    borderRadius: RADIOS.sm,
+    marginTop: ESPACIADO.space2,
   },
   rolTexto: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: '800',
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORES.brandPrimary,
     letterSpacing: 0.5,
   },
   botonSalir: {
-    backgroundColor: '#dc2626',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: ESPACIADO.space3,
+    paddingVertical: ESPACIADO.space2,
+    borderRadius: RADIOS.md,
+    borderWidth: 1,
+    borderColor: COLORES.dangerBg,
+    backgroundColor: COLORES.dangerBg,
   },
   botonSalirTexto: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '700',
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.danger,
+    fontWeight: '600',
   },
   bannerCancha: {
     flexDirection: 'row',
-    backgroundColor: '#065f46',
-    borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
-    marginBottom: 14,
+    backgroundColor: COLORES.surfaceDefault,
+    borderRadius: RADIOS.lg,
     borderWidth: 1,
-    borderColor: '#10b981',
+    borderColor: COLORES.brandAccent,
+    padding: ESPACIADO.space4,
+    marginBottom: ESPACIADO.space3,
+    alignItems: 'flex-start',
+    gap: ESPACIADO.space3,
+    ...SOMBRAS.sutil,
   },
-  bannerIcono: {
-    marginRight: 12,
+  bannerIconoContenedor: {
+    width: 36,
+    height: 36,
+    borderRadius: RADIOS.md,
+    backgroundColor: COLORES.brandAccentSubtle,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
   },
-  bannerContenido: {
+  bannerTextoContenedor: {
     flex: 1,
   },
   bannerTitulo: {
-    fontSize: 14,
+    ...TIPOGRAFIA.bodyMedium,
+    color: COLORES.brandPrimary,
     fontWeight: '700',
-    color: '#ffffff',
+    marginBottom: 2,
   },
-  bannerTexto: {
-    fontSize: 12,
-    color: '#a7f3d0',
-    marginTop: 2,
-    lineHeight: 16,
+  bannerDescripcion: {
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textSecondary,
+    lineHeight: 18,
   },
   cajaEstado: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#064e3b',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 20,
+    justifyContent: 'space-between',
+    backgroundColor: COLORES.surfaceDefault,
+    paddingHorizontal: ESPACIADO.space4,
+    paddingVertical: ESPACIADO.space3,
+    borderRadius: RADIOS.md,
     borderWidth: 1,
-    borderColor: '#047857',
+    borderColor: COLORES.borderDefault,
+    marginBottom: ESPACIADO.space5,
+  },
+  estadoIzquierda: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: ESPACIADO.space2,
+    flex: 1,
   },
   puntoConexion: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#eab308',
-    marginRight: 10,
+    width: 8,
+    height: 8,
+    borderRadius: RADIOS.full,
+    backgroundColor: COLORES.textMuted,
   },
   puntoVerde: {
-    backgroundColor: '#34d399',
+    backgroundColor: COLORES.success,
   },
   puntoNaranja: {
-    backgroundColor: '#f97316',
+    backgroundColor: COLORES.warning,
   },
   textoEstado: {
-    color: '#d1fae5',
-    fontSize: 13,
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textSecondary,
     fontWeight: '500',
   },
+  seccionEncabezado: {
+    marginBottom: ESPACIADO.space3,
+  },
   seccionTitulo: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#f8fafc',
-    marginBottom: 14,
+    ...TIPOGRAFIA.heading3,
+    color: COLORES.textPrimary,
   },
-  grid: {
-    gap: 12,
-  },
-  tarjetaAccion: {
-    backgroundColor: '#064e3b',
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#047857',
-  },
-  tarjetaIcono: {
-    fontSize: 26,
-    marginBottom: 6,
-  },
-  tarjetaTitulo: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  tarjetaSubtitulo: {
-    fontSize: 13,
-    color: '#a7f3d0',
+  seccionSubtitulo: {
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textSecondary,
     marginTop: 2,
-    marginBottom: 10,
+  },
+  listaAcciones: {
+    backgroundColor: COLORES.surfaceDefault,
+    borderRadius: RADIOS.lg,
+    borderWidth: 1,
+    borderColor: COLORES.borderDefault,
+    marginBottom: ESPACIADO.space5,
+    overflow: 'hidden',
+    ...SOMBRAS.sutil,
+  },
+  accionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: ESPACIADO.space4,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORES.borderSubtle,
+    gap: ESPACIADO.space3,
+  },
+  accionItemUltimo: {
+    borderBottomWidth: 0,
+  },
+  accionItemDestacado: {
+    backgroundColor: '#FAFCF8',
+  },
+  accionIconoContenedor: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIOS.md,
+    backgroundColor: COLORES.surfaceSubtle,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  accionIconoContenedorDestacado: {
+    backgroundColor: COLORES.brandAccentSubtle,
+  },
+  accionContenido: {
+    flex: 1,
+  },
+  accionTituloFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  accionTitulo: {
+    ...TIPOGRAFIA.bodyMedium,
+    color: COLORES.textPrimary,
+    fontWeight: '600',
+  },
+  accionDescripcion: {
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textSecondary,
   },
   badgeSprint: {
-    backgroundColor: '#047857',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
+    backgroundColor: COLORES.surfaceSubtle,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: RADIOS.sm,
+  },
+  badgeSprintDestacado: {
+    backgroundColor: COLORES.brandAccentSubtle,
   },
   badgeSprintTexto: {
-    color: '#ffffff',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
+    color: COLORES.textSecondary,
+  },
+  badgeSprintTextoDestacado: {
+    color: COLORES.brandAccentDark,
   },
 });

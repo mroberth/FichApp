@@ -12,11 +12,14 @@ import {
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Shield, User, Lock, AlertCircle, ArrowRight, UserCheck, ClipboardList } from 'lucide-react-native';
 import { useAuth } from '../../context/AuthContext';
+import { COLORES, ESPACIADO, RADIOS, TIPOGRAFIA, SOMBRAS } from '../../theme';
 
 export default function LoginScreen() {
   const [identificador, setIdentificador] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const [focoCampo, setFocoCampo] = useState(null);
   const { iniciarSesion, cargando, error, limpiarError } = useAuth();
 
   const manejarLogin = async () => {
@@ -34,246 +37,311 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.contenedor}>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORES.surfaceBackground} />
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        {/* Cabecera / Identidad */}
-        <View style={styles.encabezado}>
-          <View style={styles.insigniaContenedor}>
-            <Text style={styles.insigniaTexto}>⚽ FICHAPP</Text>
-          </View>
-          <Text style={styles.titulo}>Bienvenido</Text>
-          <Text style={styles.subtitulo}>Gestión integral de academias deportivas</Text>
-        </View>
-
-        {/* Tarjeta del Formulario */}
-        <View style={styles.tarjeta}>
-          <Text style={styles.tarjetaTitulo}>Iniciar Sesión</Text>
-
-          {error && (
-            <View style={styles.cajaError}>
-              <Text style={styles.cajaErrorTexto}>⚠️ {error}</Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Cabecera / Identidad de Marca */}
+          <View style={styles.encabezado}>
+            <View style={styles.emblema}>
+              <Shield size={28} color={COLORES.brandPrimary} strokeWidth={2.2} />
+              <View style={styles.puntoAcento} />
             </View>
-          )}
-
-          <View style={styles.campoGrupo}>
-            <Text style={styles.etiqueta}>Usuario o Correo</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ej: admin o entrenador"
-              placeholderTextColor="#94a3b8"
-              value={identificador}
-              onChangeText={(t) => {
-                limpiarError();
-                setIdentificador(t);
-              }}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
+            <Text style={styles.marcaTexto}>FICHAPP</Text>
+            <Text style={styles.titulo}>Acceso al Sistema</Text>
+            <Text style={styles.subtitulo}>Gestión operativa y deportiva de academias</Text>
           </View>
 
-          <View style={styles.campoGrupo}>
-            <Text style={styles.etiqueta}>Contraseña</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="••••••••"
-              placeholderTextColor="#94a3b8"
-              value={contrasena}
-              onChangeText={(t) => {
-                limpiarError();
-                setContrasena(t);
-              }}
-              secureTextEntry
-              autoCapitalize="none"
-            />
-          </View>
-
-          <TouchableOpacity
-            style={[styles.botonPrincipal, cargando && styles.botonDeshabilitado]}
-            onPress={manejarLogin}
-            disabled={cargando}
-            activeOpacity={0.8}
-          >
-            {cargando ? (
-              <ActivityIndicator color="#ffffff" />
-            ) : (
-              <Text style={styles.botonPrincipalTexto}>Ingresar al Sistema</Text>
+          {/* Formulario */}
+          <View style={styles.tarjeta}>
+            {error && (
+              <View style={styles.cajaError}>
+                <AlertCircle size={18} color={COLORES.danger} strokeWidth={2} style={styles.iconoError} />
+                <Text style={styles.cajaErrorTexto}>{error}</Text>
+              </View>
             )}
-          </TouchableOpacity>
 
-          {/* Accesos Rápidos para Pruebas / Piloto Obelisco FC */}
-          <View style={styles.seccionDemo}>
-            <Text style={styles.seccionDemoTitulo}>Cuentas Piloto (Obelisco FC):</Text>
-            <View style={styles.demoBotonesFila}>
-              <TouchableOpacity
-                style={styles.demoBoton}
-                onPress={() => rellenarCredenciales('admin', 'password123')}
+            {/* Campo Usuario */}
+            <View style={styles.campoGrupo}>
+              <Text style={styles.etiqueta}>Identificador de acceso o correo</Text>
+              <View
+                style={[
+                  styles.inputContenedor,
+                  focoCampo === 'usuario' && styles.inputContenedorEnfocado,
+                ]}
               >
-                <Text style={styles.demoBotonTexto}>👑 Admin</Text>
-              </TouchableOpacity>
+                <User size={18} color={focoCampo === 'usuario' ? COLORES.brandPrimary : COLORES.textMuted} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Ej: admin o entrenador"
+                  placeholderTextColor={COLORES.textMuted}
+                  value={identificador}
+                  onChangeText={(t) => {
+                    limpiarError();
+                    setIdentificador(t);
+                  }}
+                  onFocus={() => setFocoCampo('usuario')}
+                  onBlur={() => setFocoCampo(null)}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+            </View>
 
-              <TouchableOpacity
-                style={styles.demoBoton}
-                onPress={() => rellenarCredenciales('entrenador', 'password123')}
+            {/* Campo Contraseña */}
+            <View style={styles.campoGrupo}>
+              <Text style={styles.etiqueta}>Contraseña</Text>
+              <View
+                style={[
+                  styles.inputContenedor,
+                  focoCampo === 'clave' && styles.inputContenedorEnfocado,
+                ]}
               >
-                <Text style={styles.demoBotonTexto}>📋 Entrenador</Text>
-              </TouchableOpacity>
+                <Lock size={18} color={focoCampo === 'clave' ? COLORES.brandPrimary : COLORES.textMuted} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Ingresa tu contraseña"
+                  placeholderTextColor={COLORES.textMuted}
+                  value={contrasena}
+                  onChangeText={(t) => {
+                    limpiarError();
+                    setContrasena(t);
+                  }}
+                  onFocus={() => setFocoCampo('clave')}
+                  onBlur={() => setFocoCampo(null)}
+                  secureTextEntry
+                  autoCapitalize="none"
+                />
+              </View>
+            </View>
+
+            {/* Botón Principal de Acción */}
+            <TouchableOpacity
+              style={[styles.botonPrincipal, cargando && styles.botonDeshabilitado]}
+              onPress={manejarLogin}
+              disabled={cargando}
+              activeOpacity={0.85}
+            >
+              {cargando ? (
+                <ActivityIndicator color={COLORES.textOnBrand} />
+              ) : (
+                <View style={styles.botonPrincipalContenido}>
+                  <Text style={styles.botonPrincipalTexto}>Iniciar Sesión</Text>
+                  <ArrowRight size={18} color={COLORES.textOnBrand} strokeWidth={2.2} />
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Accesos de Prueba Piloto */}
+            <View style={styles.seccionDemo}>
+              <Text style={styles.seccionDemoTitulo}>Cuentas del Piloto Obelisco FC</Text>
+              <View style={styles.demoBotonesFila}>
+                <TouchableOpacity
+                  style={styles.demoBoton}
+                  onPress={() => rellenarCredenciales('admin', 'password123')}
+                  activeOpacity={0.7}
+                >
+                  <UserCheck size={16} color={COLORES.brandPrimary} />
+                  <Text style={styles.demoBotonTexto}>Admin Obelisco</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.demoBoton}
+                  onPress={() => rellenarCredenciales('entrenador', 'password123')}
+                  activeOpacity={0.7}
+                >
+                  <ClipboardList size={16} color={COLORES.brandPrimary} />
+                  <Text style={styles.demoBotonTexto}>Entrenador</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
 
-        {/* Pie de página */}
-        <Text style={styles.piePagina}>FichApp v0.3 • Piloto Obelisco FC (Barquisimeto)</Text>
-      </ScrollView>
-    </KeyboardAvoidingView>
-  </SafeAreaView>
+          {/* Pie de página */}
+          <Text style={styles.piePagina}>FichApp • Piloto Obelisco FC (Barquisimeto, VE)</Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   contenedor: {
     flex: 1,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORES.surfaceBackground,
+  },
+  keyboardView: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
-    padding: 24,
+    paddingHorizontal: ESPACIADO.space5,
+    paddingVertical: ESPACIADO.space6,
   },
   encabezado: {
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: ESPACIADO.space6,
   },
-  insigniaContenedor: {
-    backgroundColor: '#1e293b',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
+  emblema: {
+    width: 56,
+    height: 56,
+    borderRadius: RADIOS.xl,
+    backgroundColor: COLORES.surfaceDefault,
     borderWidth: 1,
-    borderColor: '#38bdf8',
-    marginBottom: 12,
+    borderColor: COLORES.borderDefault,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: ESPACIADO.space3,
+    position: 'relative',
+    ...SOMBRAS.sutil,
   },
-  insigniaTexto: {
-    color: '#38bdf8',
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 1.5,
+  puntoAcento: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 8,
+    height: 8,
+    borderRadius: RADIOS.full,
+    backgroundColor: COLORES.brandAccent,
+  },
+  marcaTexto: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: COLORES.brandPrimary,
+    letterSpacing: 2,
+    marginBottom: ESPACIADO.space1,
   },
   titulo: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#ffffff',
+    ...TIPOGRAFIA.heading1,
+    color: COLORES.textPrimary,
     textAlign: 'center',
   },
   subtitulo: {
-    fontSize: 14,
-    color: '#94a3b8',
-    marginTop: 6,
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textSecondary,
     textAlign: 'center',
+    marginTop: ESPACIADO.space1,
   },
   tarjeta: {
-    backgroundColor: '#1e293b',
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    backgroundColor: COLORES.surfaceDefault,
+    borderRadius: RADIOS.lg,
+    padding: ESPACIADO.space6,
     borderWidth: 1,
-    borderColor: '#334155',
-  },
-  tarjetaTitulo: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#f8fafc',
-    marginBottom: 20,
+    borderColor: COLORES.borderDefault,
+    ...SOMBRAS.tarjeta,
   },
   cajaError: {
-    backgroundColor: '#451a1a',
-    borderColor: '#ef4444',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORES.dangerBg,
+    borderColor: COLORES.danger,
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    borderRadius: RADIOS.md,
+    padding: ESPACIADO.space3,
+    marginBottom: ESPACIADO.space4,
+  },
+  iconoError: {
+    marginRight: ESPACIADO.space2,
   },
   cajaErrorTexto: {
-    color: '#fca5a5',
-    fontSize: 13,
-    lineHeight: 18,
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.danger,
+    flex: 1,
+    fontWeight: '500',
   },
   campoGrupo: {
-    marginBottom: 18,
+    marginBottom: ESPACIADO.space4,
   },
   etiqueta: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#cbd5e1',
-    marginBottom: 8,
+    ...TIPOGRAFIA.label,
+    color: COLORES.textPrimary,
+    marginBottom: ESPACIADO.space2,
+  },
+  inputContenedor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORES.surfaceDefault,
+    borderWidth: 1,
+    borderColor: COLORES.borderDefault,
+    borderRadius: RADIOS.md,
+    paddingHorizontal: ESPACIADO.space3,
+    height: 46,
+    gap: ESPACIADO.space2,
+  },
+  inputContenedorEnfocado: {
+    borderColor: COLORES.borderFocus,
+    backgroundColor: COLORES.surfaceDefault,
   },
   input: {
-    backgroundColor: '#0f172a',
-    borderColor: '#334155',
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: '#ffffff',
-    fontSize: 15,
+    flex: 1,
+    ...TIPOGRAFIA.body,
+    color: COLORES.textPrimary,
+    height: '100%',
   },
   botonPrincipal: {
-    backgroundColor: '#2563eb',
-    borderRadius: 10,
-    paddingVertical: 14,
+    backgroundColor: COLORES.brandPrimary,
+    borderRadius: RADIOS.md,
+    height: 48,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: ESPACIADO.space2,
   },
   botonDeshabilitado: {
     opacity: 0.6,
   },
+  botonPrincipalContenido: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: ESPACIADO.space2,
+  },
   botonPrincipalTexto: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
+    ...TIPOGRAFIA.button,
+    color: COLORES.textOnBrand,
   },
   seccionDemo: {
-    marginTop: 24,
-    paddingTop: 18,
+    marginTop: ESPACIADO.space6,
+    paddingTop: ESPACIADO.space4,
     borderTopWidth: 1,
-    borderTopColor: '#334155',
+    borderTopColor: COLORES.borderSubtle,
   },
   seccionDemoTitulo: {
-    fontSize: 12,
-    color: '#94a3b8',
-    marginBottom: 10,
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textSecondary,
+    marginBottom: ESPACIADO.space3,
     textAlign: 'center',
   },
   demoBotonesFila: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
+    gap: ESPACIADO.space3,
   },
   demoBoton: {
     flex: 1,
-    backgroundColor: '#0f172a',
-    borderColor: '#475569',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingVertical: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: ESPACIADO.space2,
+    backgroundColor: COLORES.surfaceSubtle,
+    borderWidth: 1,
+    borderColor: COLORES.borderDefault,
+    borderRadius: RADIOS.md,
+    paddingVertical: ESPACIADO.space2 + 2,
   },
   demoBotonTexto: {
-    color: '#38bdf8',
-    fontSize: 13,
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.brandPrimary,
     fontWeight: '600',
   },
   piePagina: {
-    color: '#64748b',
-    fontSize: 12,
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textMuted,
     textAlign: 'center',
-    marginTop: 24,
+    marginTop: ESPACIADO.space6,
   },
 });
