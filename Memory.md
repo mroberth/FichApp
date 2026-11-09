@@ -15,6 +15,7 @@ Guarda lo que no queremos volver a discutir ni explicar entre sesiones.
 - **Saldo a Favor:** Bolsa de `saldos_a_favor` asociada al representante para retener excedentes o vueltos.
 - **Asistencia Técnica en Cancha:** Toma de asistencia *offline* para entrenadores mediante SQLite local en React Native Expo y sincronización por lote.
 - **Ubicación del Código:** `/home/mroberth/Proyectos/fichapp/`.
+- **Repositorio Remoto Oficial:** `https://github.com/mroberth/FichApp.git` (Rama principal: `main`).
 
 ## 2. Errores Resueltos y Soluciones
 - **Estandarización de Excepciones:** Se implementó `App\Core\ExcepcionApi` y `App\Core\ErrorCodes` para que los Servicios lancen excepciones con código, estado HTTP y mensaje en español.
