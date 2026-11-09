@@ -22,5 +22,9 @@
     "config": {
         "sort-packages": true,
         "optimize-autoloader": true
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "migrate": "php scripts/migrar.php"
     }
 }
