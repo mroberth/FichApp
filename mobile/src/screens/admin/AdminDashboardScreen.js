@@ -8,6 +8,7 @@ import {
   StatusBar,
   SafeAreaView,
   Alert,
+  Platform,
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/apiService';
