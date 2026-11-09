@@ -54,8 +54,8 @@ Sprint 0: Cimientos, DB & Auth (List ID: 901718120307) -- 100% COMPLETADO 🎉
 
 Sprint 1: Núcleo Deportivo & Familias (List ID: 901718120308) -- SPRINT ACTIVO 🚀
   [x] T1.1: Migraciones: Categorías, Equipos, Jugadores y Representantes (ID: 86e3zm74w)  <-- COMPLETADA
-  [ ] T1.2: Repositorios PDO y Servicios de Fichas Deportivas (ID: 86e3zm74y)  <-- SIGUIENTE TAREA
-  [ ] T1.3: Endpoints REST Deportivos (ID: 86e3zm74z)
+  [x] T1.2: Repositorios PDO y Servicios de Fichas Deportivas (ID: 86e3zm74y)  <-- COMPLETADA
+  [ ] T1.3: Endpoints REST Deportivos (ID: 86e3zm74z)  <-- SIGUIENTE TAREA
   [ ] T1.4: UI Móvil: Directorio de Jugadores y Búsqueda (ID: 86e3zm750)
 
 Sprint 2: Cancha Offline-First (Asistencia) (List ID: 901718120309) -- PENDIENTE
