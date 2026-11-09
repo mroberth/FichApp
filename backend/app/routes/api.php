@@ -6,6 +6,7 @@ use App\Core\Router;
 use App\Core\Respuesta;
 use App\Core\ContextoTenant;
 use App\Middlewares\TenantMiddleware;
+use App\Controllers\AuthController;
 
 // Rutas base bajo prefijo /api/v1
 Router::grupo('api/v1', function () {
@@ -44,5 +45,12 @@ Router::grupo('api/v1', function () {
             'mensaje'     => 'Contexto de academia validado correctamente',
             'academia_id' => ContextoTenant::getAcademiaId(),
         ]);
+    });
+
+    // ---- Módulo de Autenticación y Sesiones ----
+    Router::grupo('auth', function () {
+        Router::post('login', [AuthController::class, 'login']);
+        Router::get('me', [AuthController::class, 'me']);
+        Router::post('logout', [AuthController::class, 'logout']);
     });
 });

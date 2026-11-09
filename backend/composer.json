@@ -25,6 +25,7 @@
     },
     "scripts": {
         "test": "vendor/bin/phpunit",
-        "migrate": "php scripts/migrar.php"
+        "migrate": "php scripts/migrar.php",
+        "seed": "php scripts/seed.php"
     }
 }

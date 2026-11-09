@@ -32,8 +32,8 @@ Sprint 0: Cimientos, DB & Auth (List ID: 901718120307)
   [x] T0.1: Setup PHP 8.5 puro, PSR-4 y Conexión PDO (ID: 86e3zm74p)  <-- COMPLETADA
   [x] T0.2: Router HTTP Ligero y Middlewares de Contexto (ID: 86e3zm74q)  <-- COMPLETADA
   [x] T0.3: Migraciones Base PostgreSQL: Tenants, Usuarios y Auditoría (ID: 86e3zm74r)  <-- COMPLETADA
-  [ ] T0.4: Servicio de Autenticación, Hashes y Tokens Bearer (ID: 86e3zm74t)  <-- SIGUIENTE TAREA
-  [ ] T0.5: Setup de App Móvil Expo y Navegación por Roles (ID: 86e3zm74u)
+  [x] T0.4: Servicio de Autenticación, Hashes y Tokens Bearer (ID: 86e3zm74t)  <-- COMPLETADA
+  [ ] T0.5: Setup de App Móvil Expo y Navegación por Roles (ID: 86e3zm74u)  <-- SIGUIENTE TAREA
 
 Sprints 1 a 5: Pendientes en ClickUp
 ```
