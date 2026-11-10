@@ -5,13 +5,10 @@ Define los límites de autonomía del agente de IA, comandos oficiales y reglas 
 ---
 
 ## 1. Puede Hacer Sin Preguntar
-- Escribir y ejecutar tests unitarios con `phpunit`.
-- Corregir errores de sintaxis, tipos y advertencias del linter (PHPStan / PSR-12).
-- Actualizar comentarios en código, documentación técnica y el archivo `Memory.md` al completar tareas.
-- Ejecutar scripts de consulta y sincronización de ClickUp (`python3 scripts/clickup_sync.py`).
-- Crear DTOs, Servicios, Repositorios y Controladores dentro de las especificaciones aprobadas en el Sprint activo.
+- Crear y editar archivos de código fuente (DTOs, Repositorios, Servicios, Controladores, Rutas, Tests).
 - Crear y componer pantallas y componentes de React Native en `mobile/src/` siguiendo estrictamente los tokens del sistema de diseño (`fichapp-design-system`).
-- Ejecutar diagnósticos y verificaciones de la app móvil con `npx expo-doctor` y pruebas de empaquetado con Metro.
+- Actualizar comentarios en código, documentación técnica y el archivo `Memory.md` al completar tareas.
+- Preparar y estructurar comandos de consola para que el desarrollador los ejecute.
 
 ## 2. Debe Validar Antes de Actuar (Requiere Aprobación Humana)
 - Cualquier alteración en el esquema de base de datos (`/backend/migrations`).
@@ -22,12 +19,13 @@ Define los límites de autonomía del agente de IA, comandos oficiales y reglas 
 - Introducir una nueva librería de iconos o componentes visuales fuera del estándar aprobado (`lucide-react-native`).
 - Iniciar una nueva tarea de ClickUp sin haber cerrado y validado la anterior.
 
-## 3. Comandos Oficiales del Proyecto
+## 3. Comandos Oficiales del Proyecto (Para Ejecución Manual por el Desarrollador)
 - **Servidor local Backend:** `php -S 0.0.0.0:8000 -t backend/public` (0.0.0.0 permite acceso desde celulares físicos en la LAN/Wi-Fi).
 - **Tests Backend:** `vendor/bin/phpunit` (o `composer test`)
 - **Migraciones Backend:** `composer migrate`
 - **Seeder Base de Datos:** `composer seed`
 - **Análisis estático:** `vendor/bin/phpstan analyse`
+- **Verificación sintaxis PHP:** `php -l <archivo.php>`
 - **App Móvil Expo:** `cd mobile && npx expo start`
 - **Diagnóstico Móvil:** `cd mobile && npx expo-doctor`
 - **Sincronización ClickUp:** 
@@ -36,6 +34,7 @@ Define los límites de autonomía del agente de IA, comandos oficiales y reglas 
   - Comentar tarea: `python3 scripts/clickup_sync.py comment <CODIGO_O_ID> <TEXTO>`
 
 ## 4. Reglas Técnicas Inquebrantables
+0. **Cero Ejecución de Comandos en Terminal:** Para ahorrar tokens y acelerar las respuestas, el agente NO debe ejecutar comandos en la terminal. Todo comando de verificación, linter, pruebas, migraciones, sincronización de ClickUp o git debe ser listado con claridad al final de la intervención para que el desarrollador lo ejecute manualmente en su consola.
 1. **PHP 8.5 Puro (Arquitectura DTO-Controller-Service-Repository):**
    - Namespace raíz: `App\` mapeado a `app/`.
    - Controladores en `app/Controllers/`: Funciones directas y limpias sin lógica pesada (estilo DIRPOLES-4).

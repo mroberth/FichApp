@@ -235,7 +235,289 @@
       ]
     },
     {
-      "name": "4. Pruebas de Error (Contrato JSON)",
+      "name": "4. Núcleo Deportivo y Familias (Sprint 1 - T1.3)",
+      "item": [
+        {
+          "name": "GET Listar Categorías (/categories)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories"]
+            }
+          }
+        },
+        {
+          "name": "POST Crear Categoría (/categories)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Sub-16\",\n  \"modalidad\": \"fútbol campo\",\n  \"edad_minima\": 14,\n  \"edad_maxima\": 16\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories"]
+            }
+          }
+        },
+        {
+          "name": "GET Listar Equipos (/teams)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teams",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teams"]
+            }
+          }
+        },
+        {
+          "name": "POST Crear Equipo (/teams)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoria_id\": \"6db7c99b-2b24-41c0-a807-20aad91bb80e\",\n  \"nombre\": \"Obelisco FC Sub-12 B\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/teams",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teams"]
+            }
+          }
+        },
+        {
+          "name": "GET Entrenadores de Equipo (/teams/{id}/coaches)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/teams/d52d4d65-e62b-466c-9666-4e638dbfd275/coaches",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "teams", "d52d4d65-e62b-466c-9666-4e638dbfd275", "coaches"]
+            }
+          }
+        },
+        {
+          "name": "GET Listar Jugadores (/players)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/players?busqueda=Perez&limite=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "players"],
+              "query": [
+                {
+                  "key": "busqueda",
+                  "value": "Perez"
+                },
+                {
+                  "key": "limite",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST Registrar Jugador y Familia (/players)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Gabriel\",\n  \"apellidos\": \"Mendoza\",\n  \"fecha_nacimiento\": \"2014-07-22\",\n  \"cedula\": \"V-34888999\",\n  \"sexo\": \"M\",\n  \"ficha_medica\": {\n    \"tipo_sangre\": \"O+\",\n    \"alergias\": [\"penicilina\"]\n  },\n  \"representante\": {\n    \"nombres\": \"Mariangel\",\n    \"apellidos\": \"Mendoza\",\n    \"cedula\": \"V-15777888\",\n    \"telefono\": \"+58 412 7778899\",\n    \"correo\": \"mariangel.m@example.com\"\n  },\n  \"tipo_relacion\": \"madre\",\n  \"es_contacto_principal\": true,\n  \"equipo_id\": \"d52d4d65-e62b-466c-9666-4e638dbfd275\",\n  \"temporada\": \"2026\",\n  \"numero_camiseta\": 11,\n  \"posicion\": \"Extremo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/players",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "players"]
+            }
+          }
+        },
+        {
+          "name": "GET Ver Ficha Consolidada Jugador (/players/{id})",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/players/f4dcc474-0a9d-4a2d-9ab9-c59185456748",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "players", "f4dcc474-0a9d-4a2d-9ab9-c59185456748"]
+            }
+          }
+        },
+        {
+          "name": "PATCH Actualizar Jugador (/players/{id})",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ficha_medica\": {\n    \"tipo_sangre\": \"O+\",\n    \"alergias\": [\"polen\", \"ibuprofeno\"],\n    \"observaciones\": \"Alergias bajo control médico\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/players/f4dcc474-0a9d-4a2d-9ab9-c59185456748",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "players", "f4dcc474-0a9d-4a2d-9ab9-c59185456748"]
+            }
+          }
+        },
+        {
+          "name": "POST Asignar Equipo a Jugador (/players/{id}/team)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipo_id\": \"d52d4d65-e62b-466c-9666-4e638dbfd275\",\n  \"temporada\": \"2026\",\n  \"numero_camiseta\": 10,\n  \"posicion\": \"Mediocampista\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/players/f4dcc474-0a9d-4a2d-9ab9-c59185456748/team",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "players", "f4dcc474-0a9d-4a2d-9ab9-c59185456748", "team"]
+            }
+          }
+        },
+        {
+          "name": "GET Buscar Representantes (/representatives)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/representatives?q=Perez",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "representatives"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Perez"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Grupo Familiar Multihijo (/representatives/{id}/family)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/representatives/78aae623-5034-4b0d-8d90-53a89fefb875/family",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "representatives", "78aae623-5034-4b0d-8d90-53a89fefb875", "family"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Pruebas de Error (Contrato JSON)",
       "item": [
         {
           "name": "GET Ruta Inexistente (Espera 404)",

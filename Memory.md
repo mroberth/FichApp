@@ -38,6 +38,9 @@ Guarda lo que no queremos volver a discutir ni explicar entre sesiones.
 
 ## 3. Preferencias de Trabajo del Desarrollador
 - **Metodología Paso a Paso:** Trabajar una sola tarea a la vez del backlog de ClickUp.
+- **Cero Ejecución de Comandos en Terminal:** Para ahorrar consumo de tokens y maximizar velocidad, el agente no debe invocar la herramienta de comandos en terminal (`run_command`). Toda ejecución por consola (pruebas unitarias, linters, verificaciones sintácticas, sincronización ClickUp, migraciones, git) debe presentarse al final del mensaje para ejecución manual por parte del desarrollador.
+- **Transparencia Visual / Pruebas:** Indicar siempre dónde ubicarse visualmente en la app para ver los cambios (si es UI), o cómo probarlos con Postman y dónde verlos en base de datos (si es backend).
+- **Mantener Resumen de lo Implementado:** Incluir en cada entrega la sección estructurada con el resumen de cambios.
 - **Familiaridad y Productividad:** Mantener la estética, convenciones en español y simplicidad de `DIRPOLES-4`.
 - **Lenguaje Frontend Móvil:** JavaScript puro (`.js` / `.jsx`) en React Native + Expo SDK 58, sin TypeScript.
 - **Diseño Móvil:** Sobrio, claro y balanceado. No convertir todo en tarjetas, no abusar de sombras pesadas ni degradados invasivos, y nunca usar emojis como iconos funcionales.
@@ -55,8 +58,8 @@ Sprint 0: Cimientos, DB & Auth (List ID: 901718120307) -- 100% COMPLETADO 🎉
 Sprint 1: Núcleo Deportivo & Familias (List ID: 901718120308) -- SPRINT ACTIVO 🚀
   [x] T1.1: Migraciones: Categorías, Equipos, Jugadores y Representantes (ID: 86e3zm74w)  <-- COMPLETADA
   [x] T1.2: Repositorios PDO y Servicios de Fichas Deportivas (ID: 86e3zm74y)  <-- COMPLETADA
-  [ ] T1.3: Endpoints REST Deportivos (ID: 86e3zm74z)  <-- SIGUIENTE TAREA
-  [ ] T1.4: UI Móvil: Directorio de Jugadores y Búsqueda (ID: 86e3zm750)
+  [x] T1.3: Endpoints REST Deportivos (ID: 86e3zm74z)  <-- COMPLETADA
+  [ ] T1.4: UI Móvil: Directorio de Jugadores y Búsqueda (ID: 86e3zm750)  <-- SIGUIENTE TAREA
 
 Sprint 2: Cancha Offline-First (Asistencia) (List ID: 901718120309) -- PENDIENTE
 Sprint 3: Obligaciones & Pronto-Pago (List ID: 901718120310) -- PENDIENTE
