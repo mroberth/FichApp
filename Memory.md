@@ -34,6 +34,7 @@ Guarda lo que no queremos volver a discutir ni explicar entre sesiones.
 - **Deprecación de PHPUnit 11:** Reemplazado `@depends` en docblocks por el atributo nativo `#[Depends('testMethodName')]`.
 - **Crash `ReferenceError: Property Platform doesn't exist` en Móvil:** Solucionado importando explícitamente `Platform` desde `'react-native'`.
 - **Carga Infinita en Login Móvil en Celulares Físicos:** Se resolvió sustituyendo la IP fija `10.0.2.2` (solo para emuladores PC) por resolución dinámica con `expo-constants` apuntando a la IP Wi-Fi de la laptop (`192.168.50.117`), y agregando un timeout de 8s con `AbortController` en `apiService.js`.
+- **Carga de Atletas y Flujo Interactivo Móvil [T1.4]:** Se corrigió la extracción del token Bearer en `PlayerDirectoryScreen` y `PlayerDetailScreen` utilizando `token` del contexto de autenticación con fallback asíncrono a `obtenerToken()` de SecureStore. Además, se implementó el flujo interactivo completo con pantalla modal para asignación y cambio de equipo/dorsal en tiempo real, baja lógica auditada y pantalla de alta de atletas `CreatePlayerScreen` con gestión de tutores legales.
 - **Contenido Solapado con Notch / Advertencia SafeAreaView:** Se migró toda la navegación y pantallas al componente `SafeAreaView` de `react-native-safe-area-context`.
 
 ## 3. Preferencias de Trabajo del Desarrollador
@@ -55,13 +56,17 @@ Sprint 0: Cimientos, DB & Auth (List ID: 901718120307) -- 100% COMPLETADO 🎉
   [x] T0.4: Servicio de Autenticación, Hashes y Tokens Bearer (ID: 86e3zm74t)  <-- COMPLETADA
   [x] T0.5: Setup de App Móvil Expo (SDK 58) y Navegación por Roles (ID: 86e3zm74u)  <-- COMPLETADA
 
-Sprint 1: Núcleo Deportivo & Familias (List ID: 901718120308) -- SPRINT ACTIVO 🚀
+Sprint 1: Núcleo Deportivo & Familias (List ID: 901718120308) -- 100% COMPLETADO 🎉
   [x] T1.1: Migraciones: Categorías, Equipos, Jugadores y Representantes (ID: 86e3zm74w)  <-- COMPLETADA
   [x] T1.2: Repositorios PDO y Servicios de Fichas Deportivas (ID: 86e3zm74y)  <-- COMPLETADA
   [x] T1.3: Endpoints REST Deportivos (ID: 86e3zm74z)  <-- COMPLETADA
-  [ ] T1.4: UI Móvil: Directorio de Jugadores y Búsqueda (ID: 86e3zm750)  <-- SIGUIENTE TAREA
+  [x] T1.4: UI Móvil: Directorio de Jugadores y Búsqueda (ID: 86e3zm750)  <-- COMPLETADA
 
-Sprint 2: Cancha Offline-First (Asistencia) (List ID: 901718120309) -- PENDIENTE
+Sprint 2: Cancha Offline-First (Asistencia) (List ID: 901718120309) -- SIGUIENTE SPRINT 🚀
+  [ ] T2.1: Migraciones Backend: Sesiones y Registros de Asistencia (ID: 86e3zm751)  <-- SIGUIENTE TAREA
+  [ ] T2.2: Base de Datos Local SQLite en App Móvil (ID: 86e3zm752)
+  [ ] T2.3: UI Móvil Entrenador: Toma de Asistencia Táctil Rápida (ID: 86e3zm753)
+  [ ] T2.4: Sincronización en Lote Idempotente (Mobile & API) (ID: 86e3zm754)
 Sprint 3: Obligaciones & Pronto-Pago (List ID: 901718120310) -- PENDIENTE
 Sprint 4: Pagos Multihijo & Tasa BCV (List ID: 901718120311) -- PENDIENTE
 Sprint 5: Gastos & Piloto Obelisco FC (List ID: 901718120313) -- PENDIENTE

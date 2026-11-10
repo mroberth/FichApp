@@ -40,4 +40,8 @@ export const ENDPOINTS = {
   LOGOUT: '/api/v1/auth/logout',
   PING: '/api/v1/ping',
   ESTADO: '/api/v1/estado',
+  PLAYERS: '/api/v1/players',
+  CATEGORIES: '/api/v1/categories',
+  TEAMS: '/api/v1/teams',
+  REPRESENTATIVES: '/api/v1/representatives',
 };

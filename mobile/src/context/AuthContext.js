@@ -104,6 +104,7 @@ export const AuthProvider = ({ children }) => {
       value={{
         usuario,
         token,
+        sesion: token ? { token, usuario } : null,
         cargando,
         error,
         estaAutenticado: !!usuario && !!token,

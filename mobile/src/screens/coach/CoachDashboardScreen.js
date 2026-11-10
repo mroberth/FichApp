@@ -25,7 +25,7 @@ import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/apiService';
 import { COLORES, ESPACIADO, RADIOS, TIPOGRAFIA, SOMBRAS } from '../../theme';
 
-export default function CoachDashboardScreen() {
+export default function CoachDashboardScreen({ navigation }) {
   const { usuario, cerrarSesion } = useAuth();
   const [conexionBackend, setConexionBackend] = useState('verificando');
 
@@ -60,6 +60,7 @@ export default function CoachDashboardScreen() {
       icono: CheckCircle2,
       sprint: 'Sprint 2',
       destacado: true,
+      ruta: null,
     },
     {
       id: 'equipos',
@@ -68,6 +69,7 @@ export default function CoachDashboardScreen() {
       icono: Users,
       sprint: 'Sprint 1',
       destacado: false,
+      ruta: 'PlayerDirectory',
     },
     {
       id: 'sincronizacion',
@@ -76,6 +78,7 @@ export default function CoachDashboardScreen() {
       icono: RefreshCw,
       sprint: 'Sprint 2',
       destacado: false,
+      ruta: null,
     },
   ];
 
@@ -167,6 +170,13 @@ export default function CoachDashboardScreen() {
                   a.destacado && styles.accionItemDestacado,
                 ]}
                 activeOpacity={0.7}
+                onPress={() => {
+                  if (a.ruta) {
+                    navigation.navigate(a.ruta);
+                  } else {
+                    Alert.alert('Próximamente', `${a.titulo} se activará en el ${a.sprint}.`);
+                  }
+                }}
               >
                 <View
                   style={[

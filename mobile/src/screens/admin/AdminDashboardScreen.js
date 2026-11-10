@@ -25,7 +25,7 @@ import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/apiService';
 import { COLORES, ESPACIADO, RADIOS, TIPOGRAFIA, SOMBRAS } from '../../theme';
 
-export default function AdminDashboardScreen() {
+export default function AdminDashboardScreen({ navigation }) {
   const { usuario, cerrarSesion } = useAuth();
   const [conexionBackend, setConexionBackend] = useState('verificando');
 
@@ -59,6 +59,8 @@ export default function AdminDashboardScreen() {
       descripcion: 'Padrón de atletas, representantes y fichas médicas',
       icono: Users,
       sprint: 'Sprint 1',
+      ruta: 'PlayerDirectory',
+      activo: true,
     },
     {
       id: 'cobranzas',
@@ -66,6 +68,7 @@ export default function AdminDashboardScreen() {
       descripcion: 'Registro de pagos familiares y conversión oficial BCV',
       icono: CreditCard,
       sprint: 'Sprint 4',
+      activo: false,
     },
     {
       id: 'obligaciones',
@@ -73,6 +76,7 @@ export default function AdminDashboardScreen() {
       descripcion: 'Generación mensual y políticas de pronto-pago',
       icono: CalendarCheck,
       sprint: 'Sprint 3',
+      activo: false,
     },
     {
       id: 'reportes',
@@ -80,6 +84,7 @@ export default function AdminDashboardScreen() {
       descripcion: 'Balance consolidado de caja en USD y VES',
       icono: FileText,
       sprint: 'Sprint 5',
+      activo: false,
     },
   ];
 
@@ -152,12 +157,20 @@ export default function AdminDashboardScreen() {
           {modulos.map((m, idx) => {
             const Icono = m.icono;
             return (
-              <View
+              <TouchableOpacity
                 key={m.id}
                 style={[
                   styles.moduloItem,
                   idx === modulos.length - 1 && styles.moduloItemUltimo,
                 ]}
+                activeOpacity={m.activo ? 0.7 : 1}
+                onPress={() => {
+                  if (m.ruta) {
+                    navigation.navigate(m.ruta);
+                  } else {
+                    Alert.alert('Próximamente', `El módulo de ${m.titulo} se activará en el ${m.sprint}.`);
+                  }
+                }}
               >
                 <View style={styles.moduloIconoContenedor}>
                   <Icono size={20} color={COLORES.brandPrimary} />
@@ -174,7 +187,7 @@ export default function AdminDashboardScreen() {
                 </View>
 
                 <ChevronRight size={18} color={COLORES.textMuted} />
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>

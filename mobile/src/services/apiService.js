@@ -110,4 +110,88 @@ export const apiService = {
       method: 'GET',
     });
   },
+
+  /**
+   * Lista los jugadores aplicando filtros y paginación.
+   */
+  async listarJugadores(token, filtros = {}) {
+    const partes = [];
+    if (filtros.busqueda) partes.push(`busqueda=${encodeURIComponent(filtros.busqueda)}`);
+    if (filtros.categoria_id) partes.push(`categoria_id=${encodeURIComponent(filtros.categoria_id)}`);
+    if (filtros.equipo_id) partes.push(`equipo_id=${encodeURIComponent(filtros.equipo_id)}`);
+    if (filtros.limite) partes.push(`limite=${encodeURIComponent(filtros.limite)}`);
+    if (filtros.offset) partes.push(`offset=${encodeURIComponent(filtros.offset)}`);
+
+    const queryString = partes.length > 0 ? `?${partes.join('&')}` : '';
+    return await solicitar(`${ENDPOINTS.PLAYERS}${queryString}`, {
+      method: 'GET',
+    }, token);
+  },
+
+  /**
+   * Obtiene la ficha deportiva consolidada completa de un atleta por su UUID.
+   */
+  async obtenerFichaJugador(token, id) {
+    return await solicitar(`${ENDPOINTS.PLAYERS}/${id}`, {
+      method: 'GET',
+    }, token);
+  },
+
+  /**
+   * Registra un nuevo jugador con su representante y equipo opcional.
+   */
+  async registrarJugador(token, datos) {
+    return await solicitar(ENDPOINTS.PLAYERS, {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }, token);
+  },
+
+  /**
+   * Asigna un jugador a un equipo deportivo en una temporada.
+   */
+  async asignarEquipo(token, jugadorId, datos) {
+    return await solicitar(`${ENDPOINTS.PLAYERS}/${jugadorId}/team`, {
+      method: 'POST',
+      body: JSON.stringify(datos),
+    }, token);
+  },
+
+  /**
+   * Actualiza los datos de un jugador existente.
+   */
+  async actualizarJugador(token, jugadorId, datos) {
+    return await solicitar(`${ENDPOINTS.PLAYERS}/${jugadorId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(datos),
+    }, token);
+  },
+
+  /**
+   * Da de baja lógica a un jugador de la academia.
+   */
+  async eliminarJugador(token, jugadorId) {
+    return await solicitar(`${ENDPOINTS.PLAYERS}/${jugadorId}`, {
+      method: 'DELETE',
+    }, token);
+  },
+
+  /**
+   * Lista las categorías deportivas de la academia.
+   */
+  async listarCategorias(token) {
+    return await solicitar(ENDPOINTS.CATEGORIES, {
+      method: 'GET',
+    }, token);
+  },
+
+  /**
+   * Lista los equipos deportivos de la academia.
+   */
+  async listarEquipos(token, categoriaId = null) {
+    const query = categoriaId ? `?categoria_id=${encodeURIComponent(categoriaId)}` : '';
+    return await solicitar(`${ENDPOINTS.TEAMS}${query}`, {
+      method: 'GET',
+    }, token);
+  },
 };

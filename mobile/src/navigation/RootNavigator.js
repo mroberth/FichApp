@@ -8,6 +8,9 @@ import { COLORES, TIPOGRAFIA } from '../theme';
 import LoginScreen from '../screens/auth/LoginScreen';
 import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen';
 import CoachDashboardScreen from '../screens/coach/CoachDashboardScreen';
+import PlayerDirectoryScreen from '../screens/players/PlayerDirectoryScreen';
+import PlayerDetailScreen from '../screens/players/PlayerDetailScreen';
+import CreatePlayerScreen from '../screens/players/CreatePlayerScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,12 +37,30 @@ export default function RootNavigator() {
       {!estaAutenticado ? (
         // Stack de Autenticación
         <Stack.Screen name="Login" component={LoginScreen} />
-      ) : usuario?.rol === 'entrenador' ? (
-        // Stack del Entrenador (Cuerpo Técnico)
-        <Stack.Screen name="CoachDashboard" component={CoachDashboardScreen} />
       ) : (
-        // Stack del Administrador / Superadmin
-        <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+        // Stack Autenticado (Administrador o Entrenador)
+        <>
+          {usuario?.rol === 'entrenador' ? (
+            <Stack.Screen name="CoachDashboard" component={CoachDashboardScreen} />
+          ) : (
+            <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+          )}
+          <Stack.Screen
+            name="PlayerDirectory"
+            component={PlayerDirectoryScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="PlayerDetail"
+            component={PlayerDetailScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="CreatePlayer"
+            component={CreatePlayerScreen}
+            options={{ animation: 'slide_from_bottom' }}
+          />
+        </>
       )}
     </Stack.Navigator>
   );
