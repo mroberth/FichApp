@@ -44,4 +44,6 @@ export const ENDPOINTS = {
   CATEGORIES: '/api/v1/categories',
   TEAMS: '/api/v1/teams',
   REPRESENTATIVES: '/api/v1/representatives',
+  ATTENDANCE_SYNC: '/api/v1/attendance/sync',
+  ATTENDANCE_SESSIONS: '/api/v1/attendance/sessions',
 };

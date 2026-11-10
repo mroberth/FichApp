@@ -10,6 +10,7 @@ use App\Controllers\AuthController;
 use App\Controllers\JugadorController;
 use App\Controllers\EstructuraDeportivaController;
 use App\Controllers\FamiliaController;
+use App\Controllers\AsistenciaController;
 
 // Rutas base bajo prefijo /api/v1
 Router::grupo('api/v1', function () {
@@ -87,5 +88,11 @@ Router::grupo('api/v1', function () {
         Router::post('', [FamiliaController::class, 'crear']);
         Router::get('{id}/family', [FamiliaController::class, 'obtenerGrupoFamiliar']);
         Router::post('{id}/link-player', [FamiliaController::class, 'vincularHijo']);
+    });
+
+    // ---- Módulo de Asistencia Técnica (Cancha Offline-First) ----
+    Router::grupo('attendance', function () {
+        Router::post('sync', [AsistenciaController::class, 'sincronizar']);
+        Router::get('sessions', [AsistenciaController::class, 'listarSesiones']);
     });
 });

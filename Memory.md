@@ -81,12 +81,12 @@ Sprint 1.5: Hardening & Feedback Visual -- 100% COMPLETADO 🎉
   [x] T1.5.4: Endurecimiento UX en CreatePlayerScreen, LoginScreen y FichAppModalFeedback  <-- COMPLETADA
   [x] T1.5.5: Resiliencia de Transacciones y Manejo de Conflictos HTTP 409  <-- COMPLETADA
 
-Sprint 2: Cancha Offline-First (Asistencia) (List ID: 901718120309) -- SIGUIENTE SPRINT 🚀
-  [ ] T2.1: Migraciones Backend: Sesiones y Registros de Asistencia (ID: 86e3zm751)  <-- SIGUIENTE TAREA
-  [ ] T2.2: Base de Datos Local SQLite en App Móvil (ID: 86e3zm752)
-  [ ] T2.3: UI Móvil Entrenador: Toma de Asistencia Táctil Rápida (ID: 86e3zm753)
-  [ ] T2.4: Sincronización en Lote Idempotente (Mobile & API) (ID: 86e3zm754)
-Sprint 3: Obligaciones & Pronto-Pago (List ID: 901718120310) -- PENDIENTE
+Sprint 2: Cancha Offline-First (Asistencia) (List ID: 901718120309) -- 100% COMPLETADO 🎉
+  [x] T2.1: Migraciones Backend: Sesiones y Registros de Asistencia (ID: 86e3zm751)  <-- COMPLETADA
+  [x] T2.2: Base de Datos Local SQLite en App Móvil (ID: 86e3zm752)  <-- COMPLETADA
+  [x] T2.3: UI Móvil Entrenador: Toma de Asistencia Táctil Rápida (ID: 86e3zm753)  <-- COMPLETADA
+  [x] T2.4: Sincronización en Lote Idempotente (Mobile & API) (ID: 86e3zm754)  <-- COMPLETADA
+Sprint 3: Obligaciones & Pronto-Pago (List ID: 901718120310) -- SIGUIENTE SPRINT 🚀
 Sprint 4: Pagos Multihijo & Tasa BCV (List ID: 901718120311) -- PENDIENTE
 Sprint 5: Gastos & Piloto Obelisco FC (List ID: 901718120313) -- PENDIENTE
 ```

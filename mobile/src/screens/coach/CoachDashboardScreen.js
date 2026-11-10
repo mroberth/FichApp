@@ -21,15 +21,19 @@ import {
   Activity,
   ArrowUpRight,
 } from 'lucide-react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/apiService';
+import { asistenciaOfflineRepository } from '../../services/asistenciaOfflineRepository';
 import { FichAppModalFeedback } from '../../components';
 import { COLORES, ESPACIADO, RADIOS, TIPOGRAFIA, SOMBRAS } from '../../theme';
 
 export default function CoachDashboardScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { usuario, cerrarSesion } = useAuth();
+  const { usuario, token, cerrarSesion } = useAuth();
   const [conexionBackend, setConexionBackend] = useState('verificando');
+  const [pendientesSync, setPendientesSync] = useState(0);
+  const [sincronizando, setSincronizando] = useState(false);
   const [modalFeedback, setModalFeedback] = useState({
     visible: false,
     tipo: 'confirmacion',
@@ -41,6 +45,15 @@ export default function CoachDashboardScreen({ navigation }) {
     onCancelar: null,
   });
 
+  const actualizarContadorPendientes = async () => {
+    try {
+      const cuenta = await asistenciaOfflineRepository.contarPendientes();
+      setPendientesSync(cuenta);
+    } catch (e) {
+      console.warn('Error contando pendientes:', e);
+    }
+  };
+
   useEffect(() => {
     const verificarSalud = async () => {
       try {
@@ -51,7 +64,82 @@ export default function CoachDashboardScreen({ navigation }) {
       }
     };
     verificarSalud();
+    actualizarContadorPendientes();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      actualizarContadorPendientes();
+    }, [])
+  );
+
+  const ejecutarSincronizacion = async () => {
+    if (sincronizando) return;
+
+    try {
+      setSincronizando(true);
+      const { sesiones, registros } = await asistenciaOfflineRepository.obtenerPendientesSincronizacion();
+
+      if (sesiones.length === 0) {
+        setModalFeedback({
+          visible: true,
+          tipo: 'info',
+          titulo: 'Al Día',
+          mensaje: 'No tienes sesiones ni asistencias pendientes de sincronizar.',
+          textoConfirmar: 'Entendido',
+          onConfirmar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+        });
+        return;
+      }
+
+      const payload = {
+        sesiones: sesiones.map((s) => ({
+          id: s.id,
+          equipo_id: s.equipo_id,
+          fecha_sesion: s.fecha_sesion,
+          lugar: s.lugar,
+          observaciones: s.observaciones,
+        })),
+        registros: registros.map((r) => ({
+          id: r.id,
+          sesion_id: r.sesion_id,
+          jugador_id: r.jugador_id,
+          estado_asistencia: r.estado_asistencia,
+          observaciones: r.observaciones,
+        })),
+      };
+
+      const resultado = await apiService.sincronizarAsistencia(token, payload);
+      
+      // Marcar en SQLite local como sincronizados
+      await asistenciaOfflineRepository.marcarComoSincronizados(
+        resultado.sesion_ids || [],
+        registros.map((r) => r.id)
+      );
+
+      await actualizarContadorPendientes();
+
+      setModalFeedback({
+        visible: true,
+        tipo: 'exito',
+        titulo: '¡Sincronización Exitosa!',
+        mensaje: `Se subieron al servidor ${resultado.sesiones_procesadas} sesión(es) y ${resultado.registros_procesados} registro(s) de asistencia técnica.`,
+        textoConfirmar: 'Excelente',
+        onConfirmar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+      });
+    } catch (err) {
+      setModalFeedback({
+        visible: true,
+        tipo: 'error',
+        titulo: 'Fallo al Sincronizar',
+        mensaje: 'No se pudo completar la sincronización con el servidor: ' + (err.message || 'Error de red'),
+        textoConfirmar: 'Aceptar',
+        onConfirmar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+      });
+    } finally {
+      setSincronizando(false);
+    }
+  };
 
   const confirmarSalida = () => {
     setModalFeedback({
@@ -75,10 +163,10 @@ export default function CoachDashboardScreen({ navigation }) {
       titulo: 'Tomar Asistencia en Cancha',
       descripcion: 'Registro rápido táctil por jugador (Presente / Ausente / Justificado)',
       icono: CheckCircle2,
-      sprint: 'Sprint 2 (Próximo)',
+      sprint: 'Sprint 2 (Activo)',
       destacado: true,
-      ruta: null,
-      activo: false,
+      ruta: 'TakeAttendance',
+      activo: true,
     },
     {
       id: 'equipos',
@@ -93,12 +181,15 @@ export default function CoachDashboardScreen({ navigation }) {
     {
       id: 'sincronizacion',
       titulo: 'Sincronizar Lotes de Cancha',
-      descripcion: 'Envío de asistencias guardadas localmente al backend',
+      descripcion: pendientesSync > 0
+        ? `Tienes ${pendientesSync} sesión(es) pendiente(s) por subir`
+        : 'Envío de asistencias guardadas localmente al backend',
       icono: RefreshCw,
-      sprint: 'Sprint 2',
-      destacado: false,
+      sprint: 'Sprint 2 (Activo)',
+      destacado: pendientesSync > 0,
       ruta: null,
-      activo: false,
+      activo: true,
+      accionCustom: ejecutarSincronizacion,
     },
   ];
 
@@ -208,7 +299,9 @@ export default function CoachDashboardScreen({ navigation }) {
                   ]}
                   activeOpacity={a.activo ? 0.75 : 0.9}
                   onPress={() => {
-                    if (a.ruta) {
+                    if (a.accionCustom) {
+                      a.accionCustom();
+                    } else if (a.ruta) {
                       navigation.navigate(a.ruta);
                     } else {
                       setModalFeedback({

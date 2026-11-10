@@ -11,6 +11,7 @@ import CoachDashboardScreen from '../screens/coach/CoachDashboardScreen';
 import PlayerDirectoryScreen from '../screens/players/PlayerDirectoryScreen';
 import PlayerDetailScreen from '../screens/players/PlayerDetailScreen';
 import CreatePlayerScreen from '../screens/players/CreatePlayerScreen';
+import TakeAttendanceScreen from '../screens/attendance/TakeAttendanceScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -59,6 +60,11 @@ export default function RootNavigator() {
             name="CreatePlayer"
             component={CreatePlayerScreen}
             options={{ animation: 'slide_from_bottom' }}
+          />
+          <Stack.Screen
+            name="TakeAttendance"
+            component={TakeAttendanceScreen}
+            options={{ animation: 'slide_from_right' }}
           />
         </>
       )}

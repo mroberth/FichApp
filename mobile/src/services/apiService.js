@@ -215,4 +215,24 @@ export const apiService = {
       method: 'GET',
     }, token);
   },
+
+  /**
+   * Sincroniza un lote de sesiones y registros de asistencia tomados offline.
+   */
+  async sincronizarAsistencia(token, payload) {
+    return await solicitar(ENDPOINTS.ATTENDANCE_SYNC, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }, token);
+  },
+
+  /**
+   * Obtiene el listado de sesiones de asistencia desde el backend.
+   */
+  async listarSesionesAsistencia(token, equipoId = null) {
+    const query = equipoId ? `?equipo_id=${encodeURIComponent(equipoId)}` : '';
+    return await solicitar(`${ENDPOINTS.ATTENDANCE_SESSIONS}${query}`, {
+      method: 'GET',
+    }, token);
+  },
 };
