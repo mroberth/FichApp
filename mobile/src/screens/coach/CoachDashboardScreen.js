@@ -6,9 +6,8 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
-  Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   CheckCircle2,
   Users,
@@ -20,14 +19,27 @@ import {
   ChevronRight,
   Zap,
   Activity,
+  ArrowUpRight,
 } from 'lucide-react-native';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/apiService';
+import { FichAppModalFeedback } from '../../components';
 import { COLORES, ESPACIADO, RADIOS, TIPOGRAFIA, SOMBRAS } from '../../theme';
 
 export default function CoachDashboardScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { usuario, cerrarSesion } = useAuth();
   const [conexionBackend, setConexionBackend] = useState('verificando');
+  const [modalFeedback, setModalFeedback] = useState({
+    visible: false,
+    tipo: 'confirmacion',
+    titulo: '',
+    mensaje: '',
+    textoConfirmar: 'Aceptar',
+    textoCancelar: 'Cancelar',
+    onConfirmar: null,
+    onCancelar: null,
+  });
 
   useEffect(() => {
     const verificarSalud = async () => {
@@ -42,304 +54,405 @@ export default function CoachDashboardScreen({ navigation }) {
   }, []);
 
   const confirmarSalida = () => {
-    Alert.alert(
-      'Cerrar Sesión',
-      '¿Deseas cerrar tu sesión de entrenador?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Cerrar Sesión', style: 'destructive', onPress: cerrarSesion },
-      ]
-    );
+    setModalFeedback({
+      visible: true,
+      tipo: 'peligro',
+      titulo: 'Cerrar Sesión',
+      mensaje: '¿Deseas cerrar tu sesión del panel de entrenador?',
+      textoConfirmar: 'Cerrar Sesión',
+      textoCancelar: 'Cancelar',
+      onConfirmar: async () => {
+        setModalFeedback((prev) => ({ ...prev, visible: false }));
+        await cerrarSesion();
+      },
+      onCancelar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+    });
   };
 
   const accionesEntrenador = [
     {
       id: 'asistencia',
       titulo: 'Tomar Asistencia en Cancha',
-      descripcion: 'Registro rápido táctil por jugador (Presente / Ausente)',
+      descripcion: 'Registro rápido táctil por jugador (Presente / Ausente / Justificado)',
       icono: CheckCircle2,
-      sprint: 'Sprint 2',
+      sprint: 'Sprint 2 (Próximo)',
       destacado: true,
       ruta: null,
+      activo: false,
     },
     {
       id: 'equipos',
-      titulo: 'Mis Equipos y Categorías',
-      descripcion: 'Plantilla de atletas convocados y fichas médicas',
+      titulo: 'Directorio de Jugadores y Plantillas',
+      descripcion: 'Consulta de atletas, categorías, dorsales y fichas médicas',
       icono: Users,
       sprint: 'Sprint 1',
       destacado: false,
       ruta: 'PlayerDirectory',
+      activo: true,
     },
     {
       id: 'sincronizacion',
       titulo: 'Sincronizar Lotes de Cancha',
-      descripcion: 'Envío seguro de asistencias registradas sin conexión',
+      descripcion: 'Envío de asistencias guardadas localmente al backend',
       icono: RefreshCw,
       sprint: 'Sprint 2',
       destacado: false,
       ruta: null,
+      activo: false,
     },
   ];
 
   return (
-    <SafeAreaView style={styles.contenedor}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORES.surfaceBackground} />
+    <View style={styles.contenedorPrincipal}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORES.brandPrimaryDark} />
+
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        bounces={false}
       >
-        {/* Cabecera del Entrenador */}
-        <View style={styles.cabecera}>
-          <View style={styles.cabeceraInfo}>
-            <View style={styles.organizacionFila}>
-              <Building2 size={16} color={COLORES.brandPrimary} />
-              <Text style={styles.academiaNombre}>
+        {/* =========================================================
+            1. HERO BRANDING SUPERIOR (Azul Petróleo Institucional)
+           ========================================================= */}
+        <View style={[styles.heroSuperior, { paddingTop: Math.max(insets.top, 20) + ESPACIADO.space5 }]}>
+          <View style={styles.circuloDecorativo1} />
+          <View style={styles.circuloDecorativo2} />
+
+          {/* Barra Superior del Hero: Tenant y Botón Salir */}
+          <View style={styles.heroBarraSuperior}>
+            <View style={styles.academiaBadge}>
+              <Building2 size={14} color={COLORES.brandAccent} />
+              <Text style={styles.academiaNombre} numberOfLines={1}>
                 {usuario?.academia?.nombre || 'Obelisco FC'}
               </Text>
             </View>
-            <Text style={styles.usuarioNombre}>{usuario?.nombre}</Text>
-            <View style={styles.rolBadge}>
-              <Activity size={12} color={COLORES.brandPrimary} />
-              <Text style={styles.rolTexto}>CUERPO TÉCNICO / ENTRENADOR</Text>
+
+            <TouchableOpacity
+              style={styles.botonSalirHero}
+              onPress={confirmarSalida}
+              activeOpacity={0.7}
+              accessibilityLabel="Cerrar sesión"
+            >
+              <LogOut size={15} color="#FFFFFF" />
+              <Text style={styles.botonSalirTexto}>Salir</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Saludo y Rol de Entrenador */}
+          <View style={styles.heroInfoUsuario}>
+            <View style={styles.rolPill}>
+              <Activity size={12} color={COLORES.brandAccent} strokeWidth={2.5} />
+              <Text style={styles.rolPillTexto}>CUERPO TÉCNICO • ENTRENADOR</Text>
+            </View>
+            <Text style={styles.usuarioSaludo}>Prof. {usuario?.nombre || 'Entrenador'}</Text>
+            <Text style={styles.heroSubtitulo}>Gestión deportiva y control en cancha</Text>
+          </View>
+
+          {/* Banner de Modo Cancha Offline (Sprint 2) */}
+          <View style={styles.bannerCanchaHero}>
+            <View style={styles.bannerIconoContenedor}>
+              <Zap size={18} color={COLORES.brandAccent} strokeWidth={2.4} />
+            </View>
+            <View style={styles.bannerTextoContenedor}>
+              <Text style={styles.bannerTitulo}>Modo Cancha (Offline-First)</Text>
+              <Text style={styles.bannerDescripcion}>
+                En el Sprint 2 podrás registrar asistencia directamente en el campo sin requerir señal de internet.
+              </Text>
             </View>
           </View>
-
-          <TouchableOpacity
-            style={styles.botonSalir}
-            onPress={confirmarSalida}
-            activeOpacity={0.7}
-            accessibilityLabel="Cerrar sesión"
-          >
-            <LogOut size={16} color={COLORES.danger} />
-            <Text style={styles.botonSalirTexto}>Salir</Text>
-          </TouchableOpacity>
         </View>
 
-        {/* Tarjeta de Modo Cancha Offline (Sprint 2) */}
-        <View style={styles.bannerCancha}>
-          <View style={styles.bannerIconoContenedor}>
-            <Zap size={20} color={COLORES.brandPrimary} strokeWidth={2.4} />
+        {/* =========================================================
+            2. HOJA INFERIOR CURVADA (Superficie Blanca Táctil)
+           ========================================================= */}
+        <View style={[styles.hojaInferior, { paddingBottom: Math.max(insets.bottom, 24) + ESPACIADO.space6 }]}>
+          {/* Estado de Red / Ping */}
+          <View style={styles.cajaEstadoHoja}>
+            <View style={styles.estadoIzquierda}>
+              {conexionBackend === 'conectado' ? (
+                <Wifi size={15} color={COLORES.success} />
+              ) : (
+                <WifiOff size={15} color={COLORES.warning} />
+              )}
+              <Text style={styles.textoEstadoHoja}>
+                {conexionBackend === 'conectado'
+                  ? 'Conexión activa con el servidor'
+                  : 'Modo sin conexión • Listo para operar en SQLite local'}
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.puntoConexion,
+                conexionBackend === 'conectado' && styles.puntoVerde,
+                conexionBackend === 'desconectado' && styles.puntoNaranja,
+              ]}
+            />
           </View>
-          <View style={styles.bannerTextoContenedor}>
-            <Text style={styles.bannerTitulo}>Modo Cancha (Offline-First)</Text>
-            <Text style={styles.bannerDescripcion}>
-              Sesión guardada en almacenamiento seguro. En el Sprint 2 podrás registrar asistencia directamente en el campo sin requerir señal de internet.
-            </Text>
+
+          {/* Herramientas de Cancha */}
+          <View style={styles.seccionEncabezado}>
+            <Text style={styles.seccionTitulo}>Herramientas de Cancha</Text>
+            <Text style={styles.seccionSubtitulo}>Acciones rápidas para entrenamientos y convocatorias</Text>
           </View>
-        </View>
 
-        {/* Estado de Red */}
-        <View style={styles.cajaEstado}>
-          <View style={styles.estadoIzquierda}>
-            {conexionBackend === 'conectado' ? (
-              <Wifi size={16} color={COLORES.success} />
-            ) : (
-              <WifiOff size={16} color={COLORES.warning} />
-            )}
-            <Text style={styles.textoEstado}>
-              {conexionBackend === 'conectado'
-                ? 'Conectado al servidor de FichApp'
-                : 'Modo sin conexión • Listo para operar localmente'}
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.puntoConexion,
-              conexionBackend === 'conectado' && styles.puntoVerde,
-              conexionBackend === 'desconectado' && styles.puntoNaranja,
-            ]}
-          />
-        </View>
-
-        {/* Herramientas de Cancha */}
-        <View style={styles.seccionEncabezado}>
-          <Text style={styles.seccionTitulo}>Herramientas de Cancha</Text>
-          <Text style={styles.seccionSubtitulo}>Acciones rápidas para entrenamientos y partidos</Text>
-        </View>
-
-        <View style={styles.listaAcciones}>
-          {accionesEntrenador.map((a, idx) => {
-            const Icono = a.icono;
-            return (
-              <TouchableOpacity
-                key={a.id}
-                style={[
-                  styles.accionItem,
-                  idx === accionesEntrenador.length - 1 && styles.accionItemUltimo,
-                  a.destacado && styles.accionItemDestacado,
-                ]}
-                activeOpacity={0.7}
-                onPress={() => {
-                  if (a.ruta) {
-                    navigation.navigate(a.ruta);
-                  } else {
-                    Alert.alert('Próximamente', `${a.titulo} se activará en el ${a.sprint}.`);
-                  }
-                }}
-              >
-                <View
+          <View style={styles.listaAcciones}>
+            {accionesEntrenador.map((a, idx) => {
+              const Icono = a.icono;
+              return (
+                <TouchableOpacity
+                  key={a.id}
                   style={[
-                    styles.accionIconoContenedor,
-                    a.destacado && styles.accionIconoContenedorDestacado,
+                    styles.accionItem,
+                    a.activo && styles.accionItemActivo,
+                    idx === accionesEntrenador.length - 1 && styles.accionItemUltimo,
                   ]}
+                  activeOpacity={a.activo ? 0.75 : 0.9}
+                  onPress={() => {
+                    if (a.ruta) {
+                      navigation.navigate(a.ruta);
+                    } else {
+                      setModalFeedback({
+                        visible: true,
+                        tipo: 'confirmacion',
+                        titulo: a.titulo,
+                        mensaje: `Esta funcionalidad corresponde al ${a.sprint}. Será implementada inmediatamente en el Sprint 2.`,
+                        textoConfirmar: 'Entendido',
+                        textoCancelar: null,
+                        onConfirmar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+                      });
+                    }
+                  }}
                 >
-                  <Icono
-                    size={20}
-                    color={a.destacado ? COLORES.brandPrimaryDark : COLORES.brandPrimary}
-                    strokeWidth={2.2}
-                  />
-                </View>
+                  <View
+                    style={[
+                      styles.accionIconoContenedor,
+                      a.activo && styles.accionIconoActivo,
+                      a.destacado && !a.activo && styles.accionIconoDestacado,
+                    ]}
+                  >
+                    <Icono
+                      size={20}
+                      color={
+                        a.activo
+                          ? COLORES.brandPrimary
+                          : a.destacado
+                          ? COLORES.brandAccentDark
+                          : COLORES.textMuted
+                      }
+                      strokeWidth={2.2}
+                    />
+                  </View>
 
-                <View style={styles.accionContenido}>
-                  <View style={styles.accionTituloFila}>
-                    <Text style={styles.accionTitulo}>{a.titulo}</Text>
-                    <View
-                      style={[
-                        styles.badgeSprint,
-                        a.destacado && styles.badgeSprintDestacado,
-                      ]}
-                    >
-                      <Text
+                  <View style={styles.accionContenido}>
+                    <View style={styles.accionTituloFila}>
+                      <Text style={[styles.accionTitulo, !a.activo && styles.accionTituloInactivo]}>
+                        {a.titulo}
+                      </Text>
+                      <View
                         style={[
-                          styles.badgeSprintTexto,
-                          a.destacado && styles.badgeSprintTextoDestacado,
+                          styles.badgeSprint,
+                          a.activo && styles.badgeSprintActivo,
+                          a.destacado && !a.activo && styles.badgeSprintDestacado,
                         ]}
                       >
-                        {a.sprint}
-                      </Text>
+                        <Text
+                          style={[
+                            styles.badgeSprintTexto,
+                            a.activo && styles.badgeSprintTextoActivo,
+                            a.destacado && !a.activo && styles.badgeSprintTextoDestacado,
+                          ]}
+                        >
+                          {a.activo ? 'DISPONIBLE' : a.sprint}
+                        </Text>
+                      </View>
                     </View>
+                    <Text style={styles.accionDescripcion}>{a.descripcion}</Text>
                   </View>
-                  <Text style={styles.accionDescripcion}>{a.descripcion}</Text>
-                </View>
 
-                <ChevronRight size={18} color={COLORES.textMuted} />
-              </TouchableOpacity>
-            );
-          })}
+                  {a.activo ? (
+                    <ArrowUpRight size={18} color={COLORES.brandPrimary} strokeWidth={2.2} />
+                  ) : (
+                    <ChevronRight size={18} color={COLORES.textMuted} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+
+      {/* Modal Desacoplado para Salida o Avisos */}
+      <FichAppModalFeedback
+        visible={modalFeedback.visible}
+        tipo={modalFeedback.tipo}
+        titulo={modalFeedback.titulo}
+        mensaje={modalFeedback.mensaje}
+        textoConfirmar={modalFeedback.textoConfirmar}
+        textoCancelar={modalFeedback.textoCancelar}
+        onConfirmar={modalFeedback.onConfirmar}
+        onCancelar={modalFeedback.onCancelar}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  contenedor: {
+  contenedorPrincipal: {
     flex: 1,
-    backgroundColor: COLORES.surfaceBackground,
+    backgroundColor: COLORES.brandPrimaryDark,
   },
-  scroll: {
+  scrollContent: {
+    flexGrow: 1,
+  },
+  heroSuperior: {
+    backgroundColor: COLORES.brandPrimary,
     paddingHorizontal: ESPACIADO.space5,
-    paddingVertical: ESPACIADO.space4,
+    paddingBottom: ESPACIADO.space8 + ESPACIADO.space4,
+    position: 'relative',
+    overflow: 'hidden',
   },
-  cabecera: {
+  circuloDecorativo1: {
+    position: 'absolute',
+    top: -50,
+    right: -50,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+  },
+  circuloDecorativo2: {
+    position: 'absolute',
+    bottom: -30,
+    left: -30,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(185, 228, 74, 0.06)',
+  },
+  heroBarraSuperior: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    backgroundColor: COLORES.surfaceDefault,
-    padding: ESPACIADO.space4,
-    borderRadius: RADIOS.lg,
-    borderWidth: 1,
-    borderColor: COLORES.borderDefault,
+    alignItems: 'center',
     marginBottom: ESPACIADO.space3,
-    ...SOMBRAS.sutil,
+    zIndex: 2,
   },
-  cabeceraInfo: {
-    flex: 1,
-  },
-  organizacionFila: {
+  academiaBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: ESPACIADO.space2,
-    marginBottom: ESPACIADO.space1,
+    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: ESPACIADO.space3,
+    paddingVertical: 5,
+    borderRadius: RADIOS.full,
+    maxWidth: '75%',
   },
   academiaNombre: {
-    ...TIPOGRAFIA.heading3,
-    color: COLORES.brandPrimary,
+    ...TIPOGRAFIA.bodySmall,
+    color: '#FFFFFF',
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
-  usuarioNombre: {
-    ...TIPOGRAFIA.bodyMedium,
-    color: COLORES.textPrimary,
-  },
-  rolBadge: {
+  botonSalirHero: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: COLORES.brandPrimarySubtle,
+    gap: 5,
+    backgroundColor: 'rgba(220, 38, 38, 0.25)',
+    borderWidth: 1,
+    borderColor: 'rgba(220, 38, 38, 0.4)',
+    paddingHorizontal: ESPACIADO.space3,
+    paddingVertical: 5,
+    borderRadius: RADIOS.full,
+  },
+  botonSalirTexto: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  heroInfoUsuario: {
+    zIndex: 2,
+    marginBottom: ESPACIADO.space3,
+  },
+  rolPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(185, 228, 74, 0.15)',
     alignSelf: 'flex-start',
     paddingHorizontal: ESPACIADO.space2,
     paddingVertical: 3,
     borderRadius: RADIOS.sm,
-    marginTop: ESPACIADO.space2,
+    marginBottom: ESPACIADO.space1,
   },
-  rolTexto: {
-    fontSize: 11,
+  rolPillTexto: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: COLORES.brandAccent,
+    letterSpacing: 1,
+  },
+  usuarioSaludo: {
+    ...TIPOGRAFIA.heading1,
+    color: '#FFFFFF',
     fontWeight: '700',
-    color: COLORES.brandPrimary,
-    letterSpacing: 0.5,
   },
-  botonSalir: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: ESPACIADO.space3,
-    paddingVertical: ESPACIADO.space2,
-    borderRadius: RADIOS.md,
-    borderWidth: 1,
-    borderColor: COLORES.dangerBg,
-    backgroundColor: COLORES.dangerBg,
-  },
-  botonSalirTexto: {
+  heroSubtitulo: {
     ...TIPOGRAFIA.bodySmall,
-    color: COLORES.danger,
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 2,
   },
-  bannerCancha: {
+  bannerCanchaHero: {
     flexDirection: 'row',
-    backgroundColor: COLORES.surfaceDefault,
-    borderRadius: RADIOS.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderWidth: 1,
-    borderColor: COLORES.brandAccent,
-    padding: ESPACIADO.space4,
-    marginBottom: ESPACIADO.space3,
+    borderColor: 'rgba(185, 228, 74, 0.25)',
+    borderRadius: RADIOS.md,
+    padding: ESPACIADO.space3,
     alignItems: 'flex-start',
-    gap: ESPACIADO.space3,
-    ...SOMBRAS.sutil,
+    gap: ESPACIADO.space2 + 2,
+    zIndex: 2,
   },
   bannerIconoContenedor: {
-    width: 36,
-    height: 36,
-    borderRadius: RADIOS.md,
-    backgroundColor: COLORES.brandAccentSubtle,
+    width: 32,
+    height: 32,
+    borderRadius: RADIOS.sm,
+    backgroundColor: 'rgba(185, 228, 74, 0.12)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 2,
   },
   bannerTextoContenedor: {
     flex: 1,
   },
   bannerTitulo: {
-    ...TIPOGRAFIA.bodyMedium,
-    color: COLORES.brandPrimary,
+    fontSize: 12,
     fontWeight: '700',
+    color: '#FFFFFF',
     marginBottom: 2,
   },
   bannerDescripcion: {
-    ...TIPOGRAFIA.bodySmall,
-    color: COLORES.textSecondary,
-    lineHeight: 18,
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.8)',
+    lineHeight: 15,
   },
-  cajaEstado: {
+  hojaInferior: {
+    flex: 1,
+    backgroundColor: COLORES.surfaceDefault,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: ESPACIADO.space5,
+    paddingTop: ESPACIADO.space6,
+    marginTop: -ESPACIADO.space4,
+    ...SOMBRAS.tarjeta,
+  },
+  cajaEstadoHoja: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORES.surfaceDefault,
+    backgroundColor: COLORES.surfaceSubtle,
     paddingHorizontal: ESPACIADO.space4,
-    paddingVertical: ESPACIADO.space3,
+    paddingVertical: ESPACIADO.space2 + 2,
     borderRadius: RADIOS.md,
     borderWidth: 1,
     borderColor: COLORES.borderDefault,
-    marginBottom: ESPACIADO.space5,
+    marginBottom: ESPACIADO.space4,
   },
   estadoIzquierda: {
     flexDirection: 'row',
@@ -347,9 +460,15 @@ const styles = StyleSheet.create({
     gap: ESPACIADO.space2,
     flex: 1,
   },
+  textoEstadoHoja: {
+    ...TIPOGRAFIA.bodySmall,
+    color: COLORES.textSecondary,
+    fontWeight: '500',
+    fontSize: 11,
+  },
   puntoConexion: {
-    width: 8,
-    height: 8,
+    width: 7,
+    height: 7,
     borderRadius: RADIOS.full,
     backgroundColor: COLORES.textMuted,
   },
@@ -359,16 +478,12 @@ const styles = StyleSheet.create({
   puntoNaranja: {
     backgroundColor: COLORES.warning,
   },
-  textoEstado: {
-    ...TIPOGRAFIA.bodySmall,
-    color: COLORES.textSecondary,
-    fontWeight: '500',
-  },
   seccionEncabezado: {
     marginBottom: ESPACIADO.space3,
   },
   seccionTitulo: {
-    ...TIPOGRAFIA.heading3,
+    ...TIPOGRAFIA.heading2,
+    fontSize: 18,
     color: COLORES.textPrimary,
   },
   seccionSubtitulo: {
@@ -381,7 +496,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIOS.lg,
     borderWidth: 1,
     borderColor: COLORES.borderDefault,
-    marginBottom: ESPACIADO.space5,
     overflow: 'hidden',
     ...SOMBRAS.sutil,
   },
@@ -393,21 +507,24 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORES.borderSubtle,
     gap: ESPACIADO.space3,
   },
+  accionItemActivo: {
+    backgroundColor: '#FAFCF8',
+  },
   accionItemUltimo: {
     borderBottomWidth: 0,
   },
-  accionItemDestacado: {
-    backgroundColor: '#FAFCF8',
-  },
   accionIconoContenedor: {
-    width: 40,
-    height: 40,
+    width: 42,
+    height: 42,
     borderRadius: RADIOS.md,
     backgroundColor: COLORES.surfaceSubtle,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  accionIconoContenedorDestacado: {
+  accionIconoActivo: {
+    backgroundColor: COLORES.brandPrimarySubtle,
+  },
+  accionIconoDestacado: {
     backgroundColor: COLORES.brandAccentSubtle,
   },
   accionContenido: {
@@ -422,11 +539,16 @@ const styles = StyleSheet.create({
   accionTitulo: {
     ...TIPOGRAFIA.bodyMedium,
     color: COLORES.textPrimary,
+    fontWeight: '700',
+  },
+  accionTituloInactivo: {
+    color: COLORES.textSecondary,
     fontWeight: '600',
   },
   accionDescripcion: {
     ...TIPOGRAFIA.bodySmall,
     color: COLORES.textSecondary,
+    lineHeight: 16,
   },
   badgeSprint: {
     backgroundColor: COLORES.surfaceSubtle,
@@ -434,13 +556,19 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: RADIOS.sm,
   },
+  badgeSprintActivo: {
+    backgroundColor: COLORES.brandAccentSubtle,
+  },
   badgeSprintDestacado: {
     backgroundColor: COLORES.brandAccentSubtle,
   },
   badgeSprintTexto: {
     fontSize: 10,
     fontWeight: '700',
-    color: COLORES.textSecondary,
+    color: COLORES.textMuted,
+  },
+  badgeSprintTextoActivo: {
+    color: COLORES.brandAccentDark,
   },
   badgeSprintTextoDestacado: {
     color: COLORES.brandAccentDark,

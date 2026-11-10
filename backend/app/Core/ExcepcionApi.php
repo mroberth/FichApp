@@ -69,6 +69,12 @@ class ExcepcionApi extends Exception
         return new self(ErrorCodes::ACCESO_DENEGADO, 403, $mensaje);
     }
 
+    /** 429 — Límite de peticiones excedido (Token Bucket / Rate Limiting). */
+    public static function demasiadasPeticiones(string $mensaje = 'Demasiadas solicitudes. Por favor espera antes de intentar nuevamente.', ?array $detalles = null): self
+    {
+        return new self(ErrorCodes::DEMASIADAS_PETICIONES, 429, $mensaje, $detalles);
+    }
+
     /** 500 — Fallo técnico inesperado. */
     public static function errorInterno(string $mensaje = 'Ocurrió un error inesperado en el servidor.'): self
     {

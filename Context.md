@@ -13,9 +13,11 @@ Explica qué es el proyecto, cómo está construido y por qué.
 - **Base de Datos:** PostgreSQL 16+ con UUIDs v4, tipos `NUMERIC(12,2)` para dólares, `NUMERIC(18,2)` para bolívares y `NUMERIC(18,8)` para tasas BCV. Esquemas separados: `seguridad` y `negocio`.
 - **Frontend Móvil:** React Native 0.88 + React 19 + Expo SDK 58 en **JavaScript puro** (`.js` / `.jsx`, sin TypeScript).
 - **Sistema de Diseño Móvil:** FichApp Design System (`mobile/.antigravity/SKILLS/fichapp-design-system/`) con tokens centralizados en `mobile/src/theme/tokens.js`, Tema Claro (Light Theme) sobrio tipo Notion/Figma, e iconografía vectorial con `lucide-react-native` + `react-native-svg` (cero emojis).
+  - **Patrón Visual Aprobado:** Arquitectura *Hero Branding Split* (cabecera en azul petróleo con tipografía blanca y verde lima, superpuesta a una hoja inferior blanca curvada `borderTopLeftRadius: 32` para controles y contenido táctil).
+  - **Componentes Base Compartidos:** `FichAppInput` (validación inline, foco dinámico, toggle `Eye`/`EyeOff`), `FichAppModalFeedback` (feedback y confirmaciones desacopladas de `Alert.alert`), `FichAppLogo` y `FichAppLogoCompleto` (vectorizados desde `fichapp-2.svg`).
 - **Manejo de Áreas Seguras Móvil:** `react-native-safe-area-context`.
 - **Almacenamiento Seguro Móvil:** `expo-secure-store` para persistencia de tokens de sesión y contexto del usuario autenticado.
-- **Conectividad y Red:** Detección dinámica de IP LAN (`expo-constants` / `hostUri`) con fallback a `192.168.50.117:8000` y timeout de 8 segundos con `AbortController` en peticiones HTTP.
+- **Conectividad y Red:** Detección dinámica de IP LAN (`expo-constants` / `hostUri`) con fallback a `192.168.50.117:8000`, timeout de 8 segundos con `AbortController` en peticiones HTTP, e interceptor global `401 Unauthorized` en `apiService.js` con purga y auto-logout reactivo en `AuthContext.js`.
 - **Almacenamiento Local en Cancha:** Expo SQLite (para la toma de asistencia offline en Sprint 2).
 - **Gestión de Proyecto:** ClickUp API v2 integrado mediante `scripts/clickup_sync.py` (Espacio ID: `90178086008`, Equipo: `90171306703`).
 
@@ -37,11 +39,16 @@ El backend implementa una arquitectura desacoplada, estandarizada en español e 
   - Cero validaciones en el repositorio.
 - **Capa Núcleo (`app/Core/`):**
   - `Respuesta.php`: Contrato JSON único: `{"exito": true, "datos": ...}` y `{"exito": false, "error": {...}}`.
-  - `ExcepcionApi.php`: Única excepción de negocio que transporta código, estado HTTP y mensaje en español.
-  - `ErrorCodes.php`: Constantes estables para que el frontend programe contra ellas.
-  - `Database.php`: Conexión PDO estricta y transacciones.
+  - `ExcepcionApi.php`: Única excepción de negocio que transporta código, estado HTTP y mensaje en español (incluye `demasiadasPeticiones()` HTTP 429 y `yaExiste()` HTTP 409).
+  - `ErrorCodes.php`: Constantes estables para que el frontend programe contra ellas (incluye `DEMASIADAS_PETICIONES`, `YA_EXISTE`, `NO_AUTENTICADO`).
+  - `Database.php`: Conexión PDO estricta y transacciones atómicas.
   - `DecimalMath.php`: Aritmética fija en USD y VES mediante `bcmath`.
   - `Env.php`: Parser de entorno `.env`.
+- **Capa Middlewares (`app/Middlewares/`):**
+  - `CorsMiddleware.php`: Soporte para pre-flights OPTIONS y cabeceras CORS.
+  - `TenantMiddleware.php`: Resolución y validación del contexto multi-tenant (`academia_id`).
+  - `AuthMiddleware.php`: Extracción de Bearer token y resolución de `Auth` y roles permitidos.
+  - `RateLimitMiddleware.php`: Token Bucket limiter para mitigar ataques de fuerza bruta emitiendo HTTP 429 y cabeceras estándar.
 
 ## 4. Arquitectura General Frontend Móvil (React Native + Expo SDK 58)
 - **Tema y Tokens (`mobile/src/theme/`):**

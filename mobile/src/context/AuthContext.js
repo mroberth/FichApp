@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { apiService } from '../services/apiService';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { apiService, registrarManejadorNoAutorizado } from '../services/apiService';
 import {
   guardarToken,
   obtenerToken,
@@ -16,6 +16,26 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+
+  // Expulsión reactiva ante token revocado o expirado (401)
+  const forzarCierreSesion = useCallback(async (motivo = 'Tu sesión ha expirado. Por favor inicia sesión nuevamente.') => {
+    await limpiarTodo();
+    setToken(null);
+    setUsuario(null);
+    setError(motivo);
+  }, []);
+
+  // Registrar el interceptor global 401 para toda la aplicación
+  useEffect(() => {
+    registrarManejadorNoAutorizado((err) => {
+      console.warn('Sesión desautorizada por el servidor (401):', err.message);
+      forzarCierreSesion(err.message || 'Tu sesión ha expirado.');
+    });
+
+    return () => {
+      registrarManejadorNoAutorizado(null);
+    };
+  }, [forzarCierreSesion]);
 
   // Al abrir la aplicación, restaurar y verificar sesión existente
   useEffect(() => {

@@ -1,5 +1,17 @@
 # Patrones de interfaz
 
+## Arquitectura Visual Estándar: "Hero Branding Split"
+Para otorgar a FichApp una personalidad deportiva, sobria y premium, las pantallas principales (Login, Dashboards, Perfiles de Jugador, Toma de Asistencia y Cobros) implementan la arquitectura visual **Hero Branding Split**:
+
+1. **Hero Superior / Cabecera Deportiva (Fondo Oscuro):**
+   - Fondo en Azul Petróleo Institucional (`COLORES.brandPrimary` `#174D50` o `COLORES.brandPrimaryDark` `#0F3436`).
+   - Muestra el contexto de alto nivel: logotipo institucional, nombre del atleta/equipo, métricas destacadas o estatus en vivo.
+   - Textos en blanco de alto contraste (`#FFFFFF`) y acentos deportivos en Verde Lima (`COLORES.brandAccent` `#B9E44A`).
+2. **Hoja Inferior Curvada / Bottom Sheet Visual (Superficie Clara):**
+   - Superficie blanca o marfil (`COLORES.surfaceDefault` `#FFFFFF`).
+   - Curvatura superior pronunciada (`borderTopLeftRadius: 28` a `32`, `borderTopRightRadius: 28` a `32`) con superposición negativa (`marginTop: -20` a `-24`) y barra indicadora sutil (`indicadorArrastre`).
+   - Aloja el contenido táctil principal: formularios, cuadrículas de asistencia, listados y botones de acción primaria (`minHeight: 48` a `50`).
+
 ## Navegación
 
 Modelo: híbrido, adaptativo y mobile-first.

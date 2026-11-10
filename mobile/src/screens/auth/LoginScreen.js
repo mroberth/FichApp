@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -11,19 +10,34 @@ import {
   ScrollView,
   StatusBar,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Shield, User, Lock, AlertCircle, ArrowRight, UserCheck, ClipboardList } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { User, Lock, AlertCircle, ArrowRight, UserCheck, ClipboardList, Shield } from 'lucide-react-native';
 import { useAuth } from '../../context/AuthContext';
+import { FichAppInput, FichAppLogoCompleto } from '../../components';
 import { COLORES, ESPACIADO, RADIOS, TIPOGRAFIA, SOMBRAS } from '../../theme';
 
 export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
   const [identificador, setIdentificador] = useState('');
   const [contrasena, setContrasena] = useState('');
-  const [focoCampo, setFocoCampo] = useState(null);
+  const [erroresValidacion, setErroresValidacion] = useState({});
   const { iniciarSesion, cargando, error, limpiarError } = useAuth();
 
+  const validarFormulario = () => {
+    const nuevosErrores = {};
+    if (!identificador.trim()) {
+      nuevosErrores.identificador = 'Ingresa tu usuario o correo electrónico.';
+    }
+    if (!contrasena) {
+      nuevosErrores.contrasena = 'Ingresa tu contraseña.';
+    }
+    setErroresValidacion(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
+  };
+
   const manejarLogin = async () => {
-    if (!identificador.trim() || !contrasena) {
+    limpiarError();
+    if (!validarFormulario()) {
       return;
     }
     await iniciarSesion(identificador.trim(), contrasena);
@@ -31,13 +45,15 @@ export default function LoginScreen() {
 
   const rellenarCredenciales = (usuarioDemo, claveDemo) => {
     limpiarError();
+    setErroresValidacion({});
     setIdentificador(usuarioDemo);
     setContrasena(claveDemo);
   };
 
   return (
-    <SafeAreaView style={styles.contenedor}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORES.surfaceBackground} />
+    <View style={styles.contenedorPrincipal}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORES.brandPrimaryDark} />
+
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -45,21 +61,46 @@ export default function LoginScreen() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          bounces={false}
           showsVerticalScrollIndicator={false}
         >
-          {/* Cabecera / Identidad de Marca */}
-          <View style={styles.encabezado}>
-            <View style={styles.emblema}>
-              <Shield size={28} color={COLORES.brandPrimary} strokeWidth={2.2} />
-              <View style={styles.puntoAcento} />
+          {/* =========================================================
+              1. HERO BRANDING SUPERIOR (Azul Petróleo Profundo)
+             ========================================================= */}
+          <View style={[styles.heroSuperior, { paddingTop: Math.max(insets.top, 24) + ESPACIADO.space3 }]}>
+            {/* Elementos decorativos de fondo (ondas / cancha sutil) */}
+            <View style={styles.circuloDecorativo1} />
+            <View style={styles.circuloDecorativo2} />
+
+            <View style={styles.heroContenido}>
+              {/* Badge Deportivo Superior */}
+              <View style={styles.badgePlataforma}>
+                <Shield size={12} color={COLORES.brandAccent} strokeWidth={2.5} />
+                <Text style={styles.badgePlataformaTexto}>PLATAFORMA DEPORTIVA</Text>
+              </View>
+
+              {/* Logotipo Oficial Completo (Isotipo + Tipografía FichApp) */}
+              <FichAppLogoCompleto
+                width={160}
+                height={130}
+                colorEscudo="#FFFFFF"
+                colorCheck={COLORES.brandAccent}
+                colorTextoFich="#FFFFFF"
+                colorTextoApp={COLORES.brandAccent}
+              />
+
+              <Text style={styles.heroSubtitulo}>Gestión integral y deportiva de academias</Text>
             </View>
-            <Text style={styles.marcaTexto}>FICHAPP</Text>
-            <Text style={styles.titulo}>Acceso al Sistema</Text>
-            <Text style={styles.subtitulo}>Gestión operativa y deportiva de academias</Text>
           </View>
 
-          {/* Formulario */}
-          <View style={styles.tarjeta}>
+          {/* =========================================================
+              2. HOJA INFERIOR CURVADA (Superficie Blanca Curvada)
+             ========================================================= */}
+          <View style={[styles.hojaInferior, { paddingBottom: Math.max(insets.bottom, 24) + ESPACIADO.space6 }]}>
+            <Text style={styles.formularioTitulo}>Iniciar Sesión</Text>
+            <Text style={styles.formularioSubtitulo}>Ingresa tus credenciales para acceder a la gestión</Text>
+
+            {/* Banner de error de sesión o red */}
             {error && (
               <View style={styles.cajaError}>
                 <AlertCircle size={18} color={COLORES.danger} strokeWidth={2} style={styles.iconoError} />
@@ -67,88 +108,69 @@ export default function LoginScreen() {
               </View>
             )}
 
-            {/* Campo Usuario */}
-            <View style={styles.campoGrupo}>
-              <Text style={styles.etiqueta}>Identificador de acceso o correo</Text>
-              <View
-                style={[
-                  styles.inputContenedor,
-                  focoCampo === 'usuario' && styles.inputContenedorEnfocado,
-                ]}
-              >
-                <User size={18} color={focoCampo === 'usuario' ? COLORES.brandPrimary : COLORES.textMuted} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ej: admin o entrenador"
-                  placeholderTextColor={COLORES.textMuted}
-                  value={identificador}
-                  onChangeText={(t) => {
-                    limpiarError();
-                    setIdentificador(t);
-                  }}
-                  onFocus={() => setFocoCampo('usuario')}
-                  onBlur={() => setFocoCampo(null)}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </View>
-            </View>
+            {/* Input Usuario */}
+            <FichAppInput
+              label="Identificador de acceso o correo"
+              placeholder="Ej: admin o entrenador"
+              value={identificador}
+              onChangeText={(t) => {
+                limpiarError();
+                setErroresValidacion((prev) => ({ ...prev, identificador: null }));
+                setIdentificador(t);
+              }}
+              error={erroresValidacion.identificador}
+              iconoIzquierdo={User}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="next"
+            />
 
-            {/* Campo Contraseña */}
-            <View style={styles.campoGrupo}>
-              <Text style={styles.etiqueta}>Contraseña</Text>
-              <View
-                style={[
-                  styles.inputContenedor,
-                  focoCampo === 'clave' && styles.inputContenedorEnfocado,
-                ]}
-              >
-                <Lock size={18} color={focoCampo === 'clave' ? COLORES.brandPrimary : COLORES.textMuted} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Ingresa tu contraseña"
-                  placeholderTextColor={COLORES.textMuted}
-                  value={contrasena}
-                  onChangeText={(t) => {
-                    limpiarError();
-                    setContrasena(t);
-                  }}
-                  onFocus={() => setFocoCampo('clave')}
-                  onBlur={() => setFocoCampo(null)}
-                  secureTextEntry
-                  autoCapitalize="none"
-                />
-              </View>
-            </View>
+            {/* Input Contraseña */}
+            <FichAppInput
+              label="Contraseña"
+              placeholder="Ingresa tu contraseña"
+              value={contrasena}
+              onChangeText={(t) => {
+                limpiarError();
+                setErroresValidacion((prev) => ({ ...prev, contrasena: null }));
+                setContrasena(t);
+              }}
+              error={erroresValidacion.contrasena}
+              iconoIzquierdo={Lock}
+              esContrasena
+              autoCapitalize="none"
+              returnKeyType="done"
+              onSubmitEditing={manejarLogin}
+            />
 
             {/* Botón Principal de Acción */}
             <TouchableOpacity
               style={[styles.botonPrincipal, cargando && styles.botonDeshabilitado]}
               onPress={manejarLogin}
               disabled={cargando}
-              activeOpacity={0.85}
+              activeOpacity={0.88}
             >
               {cargando ? (
-                <ActivityIndicator color={COLORES.textOnBrand} />
+                <ActivityIndicator color={COLORES.textOnBrand} size="small" />
               ) : (
                 <View style={styles.botonPrincipalContenido}>
-                  <Text style={styles.botonPrincipalTexto}>Iniciar Sesión</Text>
-                  <ArrowRight size={18} color={COLORES.textOnBrand} strokeWidth={2.2} />
+                  <Text style={styles.botonPrincipalTexto}>Entrar al Sistema</Text>
+                  <ArrowRight size={18} color={COLORES.textOnBrand} strokeWidth={2.4} />
                 </View>
               )}
             </TouchableOpacity>
 
-            {/* Accesos de Prueba Piloto */}
+            {/* Accesos Rápidos Piloto Obelisco FC */}
             <View style={styles.seccionDemo}>
-              <Text style={styles.seccionDemoTitulo}>Cuentas del Piloto Obelisco FC</Text>
+              <Text style={styles.seccionDemoTitulo}>Accesos Rápidos • Piloto Obelisco FC</Text>
               <View style={styles.demoBotonesFila}>
                 <TouchableOpacity
                   style={styles.demoBoton}
                   onPress={() => rellenarCredenciales('admin', 'password123')}
                   activeOpacity={0.7}
                 >
-                  <UserCheck size={16} color={COLORES.brandPrimary} />
-                  <Text style={styles.demoBotonTexto}>Admin Obelisco</Text>
+                  <UserCheck size={15} color={COLORES.brandPrimary} />
+                  <Text style={styles.demoBotonTexto}>Admin</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -156,86 +178,125 @@ export default function LoginScreen() {
                   onPress={() => rellenarCredenciales('entrenador', 'password123')}
                   activeOpacity={0.7}
                 >
-                  <ClipboardList size={16} color={COLORES.brandPrimary} />
+                  <ClipboardList size={15} color={COLORES.brandPrimary} />
                   <Text style={styles.demoBotonTexto}>Entrenador</Text>
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
 
-          {/* Pie de página */}
-          <Text style={styles.piePagina}>FichApp • Piloto Obelisco FC (Barquisimeto, VE)</Text>
+            {/* Pie de pantalla */}
+            <Text style={styles.piePagina}>Barquisimeto, VE • © {new Date().getFullYear()} FichApp</Text>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  contenedor: {
+  contenedorPrincipal: {
     flex: 1,
-    backgroundColor: COLORES.surfaceBackground,
+    backgroundColor: COLORES.brandPrimaryDark,
   },
   keyboardView: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: ESPACIADO.space5,
-    paddingVertical: ESPACIADO.space6,
   },
-  encabezado: {
+  heroSuperior: {
+    backgroundColor: COLORES.brandPrimary,
+    paddingHorizontal: ESPACIADO.space6,
+    paddingBottom: ESPACIADO.space8,
     alignItems: 'center',
-    marginBottom: ESPACIADO.space6,
+    justifyContent: 'center',
+    position: 'relative',
+    overflow: 'hidden',
+    minHeight: 260,
   },
-  emblema: {
-    width: 56,
-    height: 56,
-    borderRadius: RADIOS.xl,
-    backgroundColor: COLORES.surfaceDefault,
-    borderWidth: 1,
-    borderColor: COLORES.borderDefault,
+  circuloDecorativo1: {
+    position: 'absolute',
+    top: -60,
+    right: -60,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+  },
+  circuloDecorativo2: {
+    position: 'absolute',
+    bottom: -40,
+    left: -40,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(185, 228, 74, 0.06)', // Tinte verde lima sutil
+  },
+  heroContenido: {
+    alignItems: 'center',
+    zIndex: 2,
+  },
+  emblemaHero: {
+    width: 76,
+    height: 76,
+    borderRadius: RADIOS.xl + 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: ESPACIADO.space3,
-    position: 'relative',
-    ...SOMBRAS.sutil,
+    ...SOMBRAS.tarjeta,
   },
-  puntoAcento: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    width: 8,
-    height: 8,
+  badgePlataforma: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: ESPACIADO.space3,
+    paddingVertical: 3,
     borderRadius: RADIOS.full,
-    backgroundColor: COLORES.brandAccent,
+    marginBottom: ESPACIADO.space2,
   },
-  marcaTexto: {
-    fontSize: 12,
+  badgePlataformaTexto: {
+    fontSize: 10,
     fontWeight: '800',
-    color: COLORES.brandPrimary,
-    letterSpacing: 2,
-    marginBottom: ESPACIADO.space1,
+    color: COLORES.brandAccent,
+    letterSpacing: 1.2,
   },
-  titulo: {
-    ...TIPOGRAFIA.heading1,
-    color: COLORES.textPrimary,
+  heroTitulo: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 3,
+  },
+  heroSubtitulo: {
+    ...TIPOGRAFIA.bodySmall,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 4,
     textAlign: 'center',
+    fontWeight: '500',
   },
-  subtitulo: {
+  hojaInferior: {
+    flex: 1,
+    backgroundColor: COLORES.surfaceDefault,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: ESPACIADO.space6,
+    paddingTop: ESPACIADO.space6,
+    marginTop: -ESPACIADO.space6, // Superposición sutil con la cabecera hero
+    ...SOMBRAS.tarjeta,
+  },
+  formularioTitulo: {
+    ...TIPOGRAFIA.heading2,
+    color: COLORES.textPrimary,
+    fontWeight: '700',
+  },
+  formularioSubtitulo: {
     ...TIPOGRAFIA.bodySmall,
     color: COLORES.textSecondary,
-    textAlign: 'center',
-    marginTop: ESPACIADO.space1,
-  },
-  tarjeta: {
-    backgroundColor: COLORES.surfaceDefault,
-    borderRadius: RADIOS.lg,
-    padding: ESPACIADO.space6,
-    borderWidth: 1,
-    borderColor: COLORES.borderDefault,
-    ...SOMBRAS.tarjeta,
+    marginBottom: ESPACIADO.space5,
+    marginTop: 2,
   },
   cajaError: {
     flexDirection: 'row',
@@ -256,45 +317,17 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: '500',
   },
-  campoGrupo: {
-    marginBottom: ESPACIADO.space4,
-  },
-  etiqueta: {
-    ...TIPOGRAFIA.label,
-    color: COLORES.textPrimary,
-    marginBottom: ESPACIADO.space2,
-  },
-  inputContenedor: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORES.surfaceDefault,
-    borderWidth: 1,
-    borderColor: COLORES.borderDefault,
-    borderRadius: RADIOS.md,
-    paddingHorizontal: ESPACIADO.space3,
-    height: 46,
-    gap: ESPACIADO.space2,
-  },
-  inputContenedorEnfocado: {
-    borderColor: COLORES.borderFocus,
-    backgroundColor: COLORES.surfaceDefault,
-  },
-  input: {
-    flex: 1,
-    ...TIPOGRAFIA.body,
-    color: COLORES.textPrimary,
-    height: '100%',
-  },
   botonPrincipal: {
     backgroundColor: COLORES.brandPrimary,
     borderRadius: RADIOS.md,
-    height: 48,
+    height: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: ESPACIADO.space2,
+    marginTop: ESPACIADO.space3,
+    ...SOMBRAS.sutil,
   },
   botonDeshabilitado: {
-    opacity: 0.6,
+    opacity: 0.65,
   },
   botonPrincipalContenido: {
     flexDirection: 'row',
@@ -304,18 +337,23 @@ const styles = StyleSheet.create({
   botonPrincipalTexto: {
     ...TIPOGRAFIA.button,
     color: COLORES.textOnBrand,
+    fontSize: 15,
+    fontWeight: '700',
   },
   seccionDemo: {
-    marginTop: ESPACIADO.space6,
+    marginTop: ESPACIADO.space5,
     paddingTop: ESPACIADO.space4,
     borderTopWidth: 1,
     borderTopColor: COLORES.borderSubtle,
   },
   seccionDemoTitulo: {
-    ...TIPOGRAFIA.bodySmall,
-    color: COLORES.textSecondary,
+    fontSize: 11,
+    fontWeight: '600',
+    color: COLORES.textMuted,
     marginBottom: ESPACIADO.space3,
     textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   demoBotonesFila: {
     flexDirection: 'row',
@@ -336,12 +374,12 @@ const styles = StyleSheet.create({
   demoBotonTexto: {
     ...TIPOGRAFIA.bodySmall,
     color: COLORES.brandPrimary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   piePagina: {
-    ...TIPOGRAFIA.bodySmall,
+    fontSize: 11,
     color: COLORES.textMuted,
     textAlign: 'center',
-    marginTop: ESPACIADO.space6,
+    marginTop: ESPACIADO.space5,
   },
 });

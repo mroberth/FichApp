@@ -50,6 +50,9 @@ Define los límites de autonomía del agente de IA, comandos oficiales y reglas 
 7. **Frontend Móvil y FichApp Design System:**
    - Todo el código en `mobile/` debe ser JavaScript puro (`.js` / `.jsx`), sin TypeScript.
    - Apego estricto a la skill `mobile/.antigravity/SKILLS/fichapp-design-system/`: Tema Claro (Light Theme) por defecto estilo Notion/Figma, paleta `#F3F6F2` (fondo), `#FFFFFF` (superficie), `#174D50` (azul petróleo), `#B9E44A` (verde lima), `#252B27` (texto).
+   - **Patrón Visual Aprobado «Hero Branding Split»:** Para otorgar presencia deportiva sólida, las pantallas clave implementan cabecera hero superior en azul petróleo institucional (`#174D50`) y hoja inferior blanca curvada (`borderTopLeftRadius: 32`) con controles táctiles ergonómicos (altura 48-50px).
+   - **Componentes Base Obligatorios:** Prohibido el uso de `Alert.alert` nativo; utilizar exclusivamente `FichAppModalFeedback` o validaciones inline con `FichAppInput`. Utilizar `FichAppLogoCompleto` para el branding oficial.
+   - **Formularios en Teléfonos:** Uso obligatorio de `KeyboardAvoidingView` y `ScrollView` con `keyboardShouldPersistTaps="handled"` para garantizar visibilidad al desplegar el teclado virtual.
    - Prohibido el uso de emojis como iconos de interfaz. Usar exclusivamente `lucide-react-native` y `react-native-svg`.
    - Usar siempre `react-native-safe-area-context` (`SafeAreaView` / `useSafeAreaInsets`). Prohibido usar el componente `SafeAreaView` deprecado de React Native.
    - Centralizar estilos en `mobile/src/theme/tokens.js`. Prohibido inventar colores o valores hexadecimales sueltos en las pantallas.

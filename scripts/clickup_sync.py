@@ -143,6 +143,72 @@ Pantalla en React Native con listado rápido de jugadores, buscador en tiempo re
         ]
     },
     {
+        "name": "Sprint 1.5: Hardening & Feedback Visual",
+        "tasks": [
+            {
+                "code": "T1.5.1",
+                "name": "[T1.5.1] Rate Limiting y Auditoría de Intrusión en Login",
+                "priority": 1, # Urgent
+                "description": """### Objetivo
+Proteger el endpoint `POST /api/v1/auth/login` contra ataques de fuerza bruta y registrar intentos con usuarios inexistentes en la bitácora de auditoría.
+
+### Criterios de Aceptación (DoD)
+- [ ] Mecanismo de limitación de tasa (Rate Limiting) de máximo 5 intentos fallidos cada 15 minutos por IP / identificador.
+- [ ] Registro en `seguridad.registros_auditoria` con acción `LOGIN_FALLIDO` aun si el usuario no existe en la academia.
+- [ ] Respuesta con código HTTP 429 Too Many Requests cuando se excede el umbral de seguridad."""
+            },
+            {
+                "code": "T1.5.2",
+                "name": "[T1.5.2] Interceptor Global 401 y Auto-Logout Reactivo en Móvil",
+                "priority": 2, # High
+                "description": """### Objetivo
+Garantizar que ante cualquier respuesta HTTP 401 (token expirado o revocado en base de datos), la app móvil purgue la sesión y redirija automáticamente al Login sin quedar colgada.
+
+### Criterios de Aceptación (DoD)
+- [ ] `apiService.js` o interceptor que captura respuestas con status 401.
+- [ ] Invocación inmediata a `limpiarTodo()` de `storage.js` y actualización del estado en `AuthContext`.
+- [ ] Redirección automática a `LoginScreen` con feedback visual desacoplado ("Tu sesión ha expirado")."""
+            },
+            {
+                "code": "T1.5.3",
+                "name": "[T1.5.3] Componente Input con Validación Inline y Toggle Password (Design System)",
+                "priority": 2, # High
+                "description": """### Objetivo
+Crear componente de entrada reutilizable bajo `fichapp-design-system` para mostrar errores inline y visibilidad de contraseña sin alertas nativas.
+
+### Criterios de Aceptación (DoD)
+- [ ] Soporte para estados: normal, enfocado, deshabilitado y error (`COLORES.danger` en borde).
+- [ ] Renderizado de mensaje de error inline debajo del campo (`error.detalles`).
+- [ ] Toggle para ver/ocultar contraseña con iconos de Lucide (`Eye` / `EyeOff`).
+- [ ] Cero emojis, apego estricto a `tokens.js`."""
+            },
+            {
+                "code": "T1.5.4",
+                "name": "[T1.5.4] Endurecimiento UX en CreatePlayerScreen y LoginScreen",
+                "priority": 2, # High
+                "description": """### Objetivo
+Eliminar `Alert.alert` nativo en formularios de atletas y login, agregando `KeyboardAvoidingView` para pantallas de teléfonos reales.
+
+### Criterios de Aceptación (DoD)
+- [ ] `KeyboardAvoidingView` en `CreatePlayerScreen` para evitar que el teclado tape los inputs y botones de acción.
+- [ ] Reemplazar todos los `Alert.alert()` nativos por banners de error y modales de confirmación con tokens del sistema de diseño.
+- [ ] Validación previa en frontend con `.trim()` y feedback visual inmediato."""
+            },
+            {
+                "code": "T1.5.5",
+                "name": "[T1.5.5] Resiliencia de Transacciones y Manejo de Conflictos HTTP 409",
+                "priority": 2, # High
+                "description": """### Objetivo
+Mejorar la consistencia transaccional y el manejo de excepciones de base de datos en el backend.
+
+### Criterios de Aceptación (DoD)
+- [ ] Cédulas duplicadas en `JugadorService` retornan `ExcepcionApi::yaExiste()` con código HTTP 409 Conflict.
+- [ ] Captura controlada de colisiones únicas de PostgreSQL (`SQLSTATE 23505`) para evitar errores 500 no controlados.
+- [ ] Transacciones atómicas con `Database::transaction()` en todas las operaciones compuestas."""
+            }
+        ]
+    },
+    {
         "name": "Sprint 2: Cancha Offline-First (Asistencia)",
         "tasks": [
             {

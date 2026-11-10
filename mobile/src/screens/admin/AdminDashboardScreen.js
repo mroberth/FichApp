@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
-  Alert,
+  Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Users,
   CreditCard,
@@ -20,14 +20,27 @@ import {
   Building2,
   ChevronRight,
   ShieldCheck,
+  ArrowUpRight,
 } from 'lucide-react-native';
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/apiService';
+import { FichAppModalFeedback } from '../../components';
 import { COLORES, ESPACIADO, RADIOS, TIPOGRAFIA, SOMBRAS } from '../../theme';
 
 export default function AdminDashboardScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { usuario, cerrarSesion } = useAuth();
   const [conexionBackend, setConexionBackend] = useState('verificando');
+  const [modalFeedback, setModalFeedback] = useState({
+    visible: false,
+    tipo: 'confirmacion',
+    titulo: '',
+    mensaje: '',
+    textoConfirmar: 'Aceptar',
+    textoCancelar: 'Cancelar',
+    onConfirmar: null,
+    onCancelar: null,
+  });
 
   useEffect(() => {
     const verificarSalud = async () => {
@@ -42,14 +55,19 @@ export default function AdminDashboardScreen({ navigation }) {
   }, []);
 
   const confirmarSalida = () => {
-    Alert.alert(
-      'Cerrar Sesión',
-      '¿Deseas salir del sistema?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Cerrar Sesión', style: 'destructive', onPress: cerrarSesion },
-      ]
-    );
+    setModalFeedback({
+      visible: true,
+      tipo: 'peligro',
+      titulo: 'Cerrar Sesión',
+      mensaje: '¿Deseas salir del panel administrativo de FichApp?',
+      textoConfirmar: 'Cerrar Sesión',
+      textoCancelar: 'Cancelar',
+      onConfirmar: async () => {
+        setModalFeedback((prev) => ({ ...prev, visible: false }));
+        await cerrarSesion();
+      },
+      onCancelar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+    });
   };
 
   const modulos = [
@@ -63,19 +81,19 @@ export default function AdminDashboardScreen({ navigation }) {
       activo: true,
     },
     {
-      id: 'cobranzas',
-      titulo: 'Cobranzas y Pagos',
-      descripcion: 'Registro de pagos familiares y conversión oficial BCV',
-      icono: CreditCard,
-      sprint: 'Sprint 4',
-      activo: false,
-    },
-    {
       id: 'obligaciones',
       titulo: 'Obligaciones y Cuotas',
       descripcion: 'Generación mensual y políticas de pronto-pago',
       icono: CalendarCheck,
       sprint: 'Sprint 3',
+      activo: false,
+    },
+    {
+      id: 'cobranzas',
+      titulo: 'Cobranzas y Pagos',
+      descripcion: 'Registro de pagos familiares y conversión oficial BCV',
+      icono: CreditCard,
+      sprint: 'Sprint 4',
       activo: false,
     },
     {
@@ -89,243 +107,333 @@ export default function AdminDashboardScreen({ navigation }) {
   ];
 
   return (
-    <SafeAreaView style={styles.contenedor}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORES.surfaceBackground} />
+    <View style={styles.contenedorPrincipal}>
+      <StatusBar barStyle="light-content" backgroundColor={COLORES.brandPrimaryDark} />
+
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        bounces={false}
       >
-        {/* Cabecera del Tenant */}
-        <View style={styles.cabecera}>
-          <View style={styles.cabeceraInfo}>
-            <View style={styles.organizacionFila}>
-              <Building2 size={16} color={COLORES.brandPrimary} />
-              <Text style={styles.academiaNombre}>
+        {/* =========================================================
+            1. HERO BRANDING SUPERIOR (Azul Petróleo Institucional)
+           ========================================================= */}
+        <View style={[styles.heroSuperior, { paddingTop: Math.max(insets.top, 20) + ESPACIADO.space5 }]}>
+          <View style={styles.circuloDecorativo1} />
+          <View style={styles.circuloDecorativo2} />
+
+          {/* Barra Superior del Hero: Tenant y Botón Salir */}
+          <View style={styles.heroBarraSuperior}>
+            <View style={styles.academiaBadge}>
+              <Building2 size={14} color={COLORES.brandAccent} />
+              <Text style={styles.academiaNombre} numberOfLines={1}>
                 {usuario?.academia?.nombre || 'Obelisco FC'}
               </Text>
             </View>
-            <Text style={styles.usuarioNombre}>{usuario?.nombre}</Text>
-            <View style={styles.rolBadge}>
-              <ShieldCheck size={12} color={COLORES.brandPrimary} />
-              <Text style={styles.rolTexto}>ADMINISTRADOR</Text>
+
+            <TouchableOpacity
+              style={styles.botonSalirHero}
+              onPress={confirmarSalida}
+              activeOpacity={0.7}
+              accessibilityLabel="Cerrar sesión"
+            >
+              <LogOut size={15} color="#FFFFFF" />
+              <Text style={styles.botonSalirTexto}>Salir</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Saludo y Rol Administrativo */}
+          <View style={styles.heroInfoUsuario}>
+            <View style={styles.rolPill}>
+              <ShieldCheck size={12} color={COLORES.brandAccent} strokeWidth={2.5} />
+              <Text style={styles.rolPillTexto}>ADMINISTRADOR</Text>
             </View>
+            <Text style={styles.usuarioSaludo}>Hola, {usuario?.nombre || 'Administrador'}</Text>
+            <Text style={styles.heroSubtitulo}>Panel de control y gestión operativa</Text>
           </View>
 
-          <TouchableOpacity
-            style={styles.botonSalir}
-            onPress={confirmarSalida}
-            activeOpacity={0.7}
-            accessibilityLabel="Cerrar sesión"
-          >
-            <LogOut size={16} color={COLORES.danger} />
-            <Text style={styles.botonSalirTexto}>Salir</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Estado de Enlace con el Servidor */}
-        <View style={styles.cajaEstado}>
-          <View style={styles.estadoIzquierda}>
-            {conexionBackend === 'conectado' ? (
-              <Wifi size={16} color={COLORES.success} />
-            ) : (
-              <WifiOff size={16} color={COLORES.warning} />
-            )}
-            <Text style={styles.textoEstado}>
-              {conexionBackend === 'conectado'
-                ? 'Conectado al servidor de FichApp'
-                : conexionBackend === 'desconectado'
-                ? 'Sin conexión con el servidor (192.168.50.117:8000)'
-                : 'Comprobando conectividad...'}
-            </Text>
+          {/* Estado de Enlace / Ping en Vivo */}
+          <View style={styles.cajaEstadoHero}>
+            <View style={styles.estadoIzquierda}>
+              {conexionBackend === 'conectado' ? (
+                <Wifi size={14} color={COLORES.brandAccent} />
+              ) : (
+                <WifiOff size={14} color={COLORES.warning} />
+              )}
+              <Text style={styles.textoEstadoHero}>
+                {conexionBackend === 'conectado'
+                  ? 'Conexión activa con el servidor'
+                  : 'Sin conexión con el backend (offline)'}
+              </Text>
+            </View>
+            <View
+              style={[
+                styles.puntoConexion,
+                conexionBackend === 'conectado' && styles.puntoVerde,
+                conexionBackend === 'desconectado' && styles.puntoNaranja,
+              ]}
+            />
           </View>
-          <View
-            style={[
-              styles.puntoConexion,
-              conexionBackend === 'conectado' && styles.puntoVerde,
-              conexionBackend === 'desconectado' && styles.puntoNaranja,
-            ]}
-          />
         </View>
 
-        {/* Sección de Módulos Operativos */}
-        <View style={styles.seccionEncabezado}>
-          <Text style={styles.seccionTitulo}>Módulos de Gestión</Text>
-          <Text style={styles.seccionSubtitulo}>Funcionalidades activas del roadmap</Text>
-        </View>
+        {/* =========================================================
+            2. HOJA INFERIOR CURVADA (Superficie Blanca Táctil)
+           ========================================================= */}
+        <View style={[styles.hojaInferior, { paddingBottom: Math.max(insets.bottom, 24) + ESPACIADO.space6 }]}>
+          {/* Acceso Destacado al Directorio de Jugadores */}
+          <View style={styles.seccionEncabezado}>
+            <Text style={styles.seccionTitulo}>Módulos del Sistema</Text>
+            <Text style={styles.seccionSubtitulo}>Selecciona un área para comenzar la gestión</Text>
+          </View>
 
-        <View style={styles.listaModulos}>
-          {modulos.map((m, idx) => {
-            const Icono = m.icono;
-            return (
-              <TouchableOpacity
-                key={m.id}
-                style={[
-                  styles.moduloItem,
-                  idx === modulos.length - 1 && styles.moduloItemUltimo,
-                ]}
-                activeOpacity={m.activo ? 0.7 : 1}
-                onPress={() => {
-                  if (m.ruta) {
-                    navigation.navigate(m.ruta);
-                  } else {
-                    Alert.alert('Próximamente', `El módulo de ${m.titulo} se activará en el ${m.sprint}.`);
-                  }
-                }}
-              >
-                <View style={styles.moduloIconoContenedor}>
-                  <Icono size={20} color={COLORES.brandPrimary} />
-                </View>
-
-                <View style={styles.moduloContenido}>
-                  <View style={styles.moduloTituloFila}>
-                    <Text style={styles.moduloTitulo}>{m.titulo}</Text>
-                    <View style={styles.badgeSprint}>
-                      <Text style={styles.badgeSprintTexto}>{m.sprint}</Text>
-                    </View>
+          {/* Lista de Módulos */}
+          <View style={styles.listaModulos}>
+            {modulos.map((m, idx) => {
+              const Icono = m.icono;
+              return (
+                <TouchableOpacity
+                  key={m.id}
+                  style={[
+                    styles.moduloItem,
+                    m.activo && styles.moduloItemActivo,
+                    idx === modulos.length - 1 && styles.moduloItemUltimo,
+                  ]}
+                  activeOpacity={m.activo ? 0.75 : 0.9}
+                  onPress={() => {
+                    if (m.ruta) {
+                      navigation.navigate(m.ruta);
+                    } else {
+                      setModalFeedback({
+                        visible: true,
+                        tipo: 'confirmacion',
+                        titulo: 'Módulo en Desarrollo',
+                        mensaje: `${m.titulo} se activará en el ${m.sprint}.`,
+                        textoConfirmar: 'Entendido',
+                        textoCancelar: null,
+                        onConfirmar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+                      });
+                    }
+                  }}
+                >
+                  <View style={[styles.moduloIconoContenedor, m.activo && styles.moduloIconoActivo]}>
+                    <Icono
+                      size={20}
+                      color={m.activo ? COLORES.brandPrimary : COLORES.textMuted}
+                      strokeWidth={2.2}
+                    />
                   </View>
-                  <Text style={styles.moduloDescripcion}>{m.descripcion}</Text>
-                </View>
 
-                <ChevronRight size={18} color={COLORES.textMuted} />
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                  <View style={styles.moduloContenido}>
+                    <View style={styles.moduloTituloFila}>
+                      <Text style={[styles.moduloTitulo, !m.activo && styles.moduloTituloInactivo]}>
+                        {m.titulo}
+                      </Text>
+                      <View style={[styles.badgeSprint, m.activo && styles.badgeSprintActivo]}>
+                        <Text style={[styles.badgeSprintTexto, m.activo && styles.badgeSprintTextoActivo]}>
+                          {m.activo ? 'DISPONIBLE' : m.sprint}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.moduloDescripcion}>{m.descripcion}</Text>
+                  </View>
 
-        {/* Ficha Resumen de Cuenta */}
-        <View style={styles.fichaCuenta}>
-          <Text style={styles.fichaTitulo}>Detalles de la Cuenta</Text>
-          <View style={styles.fichaFila}>
-            <Text style={styles.fichaLabel}>Usuario</Text>
-            <Text style={styles.fichaValor}>{usuario?.identificador_acceso}</Text>
+                  {m.activo ? (
+                    <ArrowUpRight size={18} color={COLORES.brandPrimary} strokeWidth={2.2} />
+                  ) : (
+                    <ChevronRight size={18} color={COLORES.textMuted} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </View>
-          <View style={styles.fichaFila}>
-            <Text style={styles.fichaLabel}>Correo</Text>
-            <Text style={styles.fichaValor}>{usuario?.correo || 'No asignado'}</Text>
-          </View>
-          <View style={styles.fichaFila}>
-            <Text style={styles.fichaLabel}>ID Academia</Text>
-            <Text style={styles.fichaValorMono} numberOfLines={1} ellipsizeMode="middle">
-              {usuario?.academia_id}
-            </Text>
+
+          {/* Ficha Resumen de Cuenta */}
+          <View style={styles.fichaCuenta}>
+            <Text style={styles.fichaTitulo}>Sesión Administrativa</Text>
+            <View style={styles.fichaFila}>
+              <Text style={styles.fichaLabel}>Identificador</Text>
+              <Text style={styles.fichaValor}>{usuario?.identificador_acceso}</Text>
+            </View>
+            <View style={styles.fichaFila}>
+              <Text style={styles.fichaLabel}>Correo</Text>
+              <Text style={styles.fichaValor}>{usuario?.correo || 'Sin correo asociado'}</Text>
+            </View>
+            <View style={styles.fichaFila}>
+              <Text style={styles.fichaLabel}>Tenant ID</Text>
+              <Text style={styles.fichaValorMono} numberOfLines={1} ellipsizeMode="middle">
+                {usuario?.academia_id}
+              </Text>
+            </View>
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+
+      {/* Modal Desacoplado para Salida o Avisos */}
+      <FichAppModalFeedback
+        visible={modalFeedback.visible}
+        tipo={modalFeedback.tipo}
+        titulo={modalFeedback.titulo}
+        mensaje={modalFeedback.mensaje}
+        textoConfirmar={modalFeedback.textoConfirmar}
+        textoCancelar={modalFeedback.textoCancelar}
+        onConfirmar={modalFeedback.onConfirmar}
+        onCancelar={modalFeedback.onCancelar}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  contenedor: {
+  contenedorPrincipal: {
     flex: 1,
-    backgroundColor: COLORES.surfaceBackground,
+    backgroundColor: COLORES.brandPrimaryDark,
   },
-  scroll: {
+  scrollContent: {
+    flexGrow: 1,
+  },
+  heroSuperior: {
+    backgroundColor: COLORES.brandPrimary,
     paddingHorizontal: ESPACIADO.space5,
-    paddingVertical: ESPACIADO.space4,
+    paddingBottom: ESPACIADO.space8 + ESPACIADO.space4, // Margen holgado hacia la hoja blanca
+    position: 'relative',
+    overflow: 'hidden',
   },
-  cabecera: {
+  circuloDecorativo1: {
+    position: 'absolute',
+    top: -50,
+    right: -50,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+  },
+  circuloDecorativo2: {
+    position: 'absolute',
+    bottom: -30,
+    left: -30,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: 'rgba(185, 228, 74, 0.06)',
+  },
+  heroBarraSuperior: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    backgroundColor: COLORES.surfaceDefault,
-    padding: ESPACIADO.space4,
-    borderRadius: RADIOS.lg,
-    borderWidth: 1,
-    borderColor: COLORES.borderDefault,
+    alignItems: 'center',
     marginBottom: ESPACIADO.space3,
-    ...SOMBRAS.sutil,
+    zIndex: 2,
   },
-  cabeceraInfo: {
-    flex: 1,
-  },
-  organizacionFila: {
+  academiaBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: ESPACIADO.space2,
-    marginBottom: ESPACIADO.space1,
+    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: ESPACIADO.space3,
+    paddingVertical: 5,
+    borderRadius: RADIOS.full,
+    maxWidth: '75%',
   },
   academiaNombre: {
-    ...TIPOGRAFIA.heading3,
-    color: COLORES.brandPrimary,
+    ...TIPOGRAFIA.bodySmall,
+    color: '#FFFFFF',
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
-  usuarioNombre: {
-    ...TIPOGRAFIA.bodyMedium,
-    color: COLORES.textPrimary,
-  },
-  rolBadge: {
+  botonSalirHero: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: COLORES.brandPrimarySubtle,
+    gap: 5,
+    backgroundColor: 'rgba(220, 38, 38, 0.25)',
+    borderWidth: 1,
+    borderColor: 'rgba(220, 38, 38, 0.4)',
+    paddingHorizontal: ESPACIADO.space3,
+    paddingVertical: 5,
+    borderRadius: RADIOS.full,
+  },
+  botonSalirTexto: {
+    fontSize: 12,
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  heroInfoUsuario: {
+    zIndex: 2,
+    marginBottom: ESPACIADO.space3,
+  },
+  rolPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(185, 228, 74, 0.15)',
     alignSelf: 'flex-start',
     paddingHorizontal: ESPACIADO.space2,
     paddingVertical: 3,
     borderRadius: RADIOS.sm,
-    marginTop: ESPACIADO.space2,
+    marginBottom: ESPACIADO.space1,
   },
-  rolTexto: {
-    fontSize: 11,
+  rolPillTexto: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: COLORES.brandAccent,
+    letterSpacing: 1,
+  },
+  usuarioSaludo: {
+    ...TIPOGRAFIA.heading1,
+    color: '#FFFFFF',
     fontWeight: '700',
-    color: COLORES.brandPrimary,
-    letterSpacing: 0.5,
   },
-  botonSalir: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: ESPACIADO.space3,
-    paddingVertical: ESPACIADO.space2,
-    borderRadius: RADIOS.md,
-    borderWidth: 1,
-    borderColor: COLORES.dangerBg,
-    backgroundColor: COLORES.dangerBg,
-  },
-  botonSalirTexto: {
+  heroSubtitulo: {
     ...TIPOGRAFIA.bodySmall,
-    color: COLORES.danger,
-    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: 2,
   },
-  cajaEstado: {
+  cajaEstadoHero: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORES.surfaceDefault,
-    paddingHorizontal: ESPACIADO.space4,
-    paddingVertical: ESPACIADO.space3,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: RADIOS.md,
-    borderWidth: 1,
-    borderColor: COLORES.borderDefault,
-    marginBottom: ESPACIADO.space5,
+    paddingHorizontal: ESPACIADO.space3,
+    paddingVertical: ESPACIADO.space2,
+    zIndex: 2,
   },
   estadoIzquierda: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: ESPACIADO.space2,
-    flex: 1,
+  },
+  textoEstadoHero: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '500',
   },
   puntoConexion: {
-    width: 8,
-    height: 8,
+    width: 7,
+    height: 7,
     borderRadius: RADIOS.full,
     backgroundColor: COLORES.textMuted,
   },
   puntoVerde: {
-    backgroundColor: COLORES.success,
+    backgroundColor: COLORES.brandAccent,
   },
   puntoNaranja: {
     backgroundColor: COLORES.warning,
   },
-  textoEstado: {
-    ...TIPOGRAFIA.bodySmall,
-    color: COLORES.textSecondary,
-    fontWeight: '500',
+  hojaInferior: {
+    flex: 1,
+    backgroundColor: COLORES.surfaceDefault,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    paddingHorizontal: ESPACIADO.space5,
+    paddingTop: ESPACIADO.space6,
+    marginTop: -ESPACIADO.space4,
+    ...SOMBRAS.tarjeta,
   },
   seccionEncabezado: {
     marginBottom: ESPACIADO.space3,
   },
   seccionTitulo: {
-    ...TIPOGRAFIA.heading3,
+    ...TIPOGRAFIA.heading2,
+    fontSize: 18,
     color: COLORES.textPrimary,
   },
   seccionSubtitulo: {
@@ -350,16 +458,22 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORES.borderSubtle,
     gap: ESPACIADO.space3,
   },
+  moduloItemActivo: {
+    backgroundColor: '#FAFCF8',
+  },
   moduloItemUltimo: {
     borderBottomWidth: 0,
   },
   moduloIconoContenedor: {
-    width: 40,
-    height: 40,
+    width: 42,
+    height: 42,
     borderRadius: RADIOS.md,
     backgroundColor: COLORES.surfaceSubtle,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  moduloIconoActivo: {
+    backgroundColor: COLORES.brandPrimarySubtle,
   },
   moduloContenido: {
     flex: 1,
@@ -373,48 +487,58 @@ const styles = StyleSheet.create({
   moduloTitulo: {
     ...TIPOGRAFIA.bodyMedium,
     color: COLORES.textPrimary,
+    fontWeight: '700',
+  },
+  moduloTituloInactivo: {
+    color: COLORES.textSecondary,
     fontWeight: '600',
   },
   moduloDescripcion: {
     ...TIPOGRAFIA.bodySmall,
     color: COLORES.textSecondary,
+    lineHeight: 16,
   },
   badgeSprint: {
-    backgroundColor: COLORES.brandAccentSubtle,
+    backgroundColor: COLORES.surfaceSubtle,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: RADIOS.sm,
   },
+  badgeSprintActivo: {
+    backgroundColor: COLORES.brandAccentSubtle,
+  },
   badgeSprintTexto: {
     fontSize: 10,
     fontWeight: '700',
+    color: COLORES.textMuted,
+  },
+  badgeSprintTextoActivo: {
     color: COLORES.brandAccentDark,
   },
   fichaCuenta: {
-    backgroundColor: COLORES.surfaceDefault,
+    backgroundColor: COLORES.surfaceSubtle,
     borderRadius: RADIOS.lg,
+    padding: ESPACIADO.space4,
     borderWidth: 1,
     borderColor: COLORES.borderDefault,
-    padding: ESPACIADO.space4,
-    marginBottom: ESPACIADO.space4,
   },
   fichaTitulo: {
-    ...TIPOGRAFIA.label,
-    color: COLORES.textMuted,
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORES.textSecondary,
     textTransform: 'uppercase',
-    marginBottom: ESPACIADO.space3,
+    letterSpacing: 0.5,
+    marginBottom: ESPACIADO.space2,
   },
   fichaFila: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: ESPACIADO.space2,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORES.borderSubtle,
+    paddingVertical: 6,
   },
   fichaLabel: {
     ...TIPOGRAFIA.bodySmall,
-    color: COLORES.textSecondary,
+    color: COLORES.textMuted,
   },
   fichaValor: {
     ...TIPOGRAFIA.bodySmall,
@@ -424,7 +548,7 @@ const styles = StyleSheet.create({
   fichaValorMono: {
     ...TIPOGRAFIA.bodySmall,
     color: COLORES.textPrimary,
-    fontFamily: 'monospace',
-    maxWidth: 160,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    maxWidth: 140,
   },
 });

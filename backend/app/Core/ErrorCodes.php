@@ -18,6 +18,7 @@ final class ErrorCodes
     public const METODO_NO_PERMITIDO = 'METHOD_NOT_ALLOWED';     // 405 — verbo HTTP incorrecto
     public const YA_EXISTE           = 'ALREADY_EXISTS';         // 409 — registro duplicado (idempotencia o unicidad)
     public const EN_USO              = 'IN_USE';                 // 409 — no se puede eliminar (dependencias)
+    public const DEMASIADAS_PETICIONES = 'TOO_MANY_REQUESTS';     // 429 — límite de tasa excedido (Rate limit)
     public const ERROR_INTERNO       = 'INTERNAL_SERVER_ERROR';  // 500 — fallo técnico no controlado
 
     // ---- Autenticación y Autorización ----

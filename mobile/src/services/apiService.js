@@ -1,5 +1,15 @@
 import { API_BASE_URL, ENDPOINTS } from '../config/api';
 
+let manejadorNoAutorizado = null;
+
+/**
+ * Registra un callback global para interceptar respuestas 401 (desautenticación reactiva).
+ * @param {Function} callback Función a ejecutar cuando el backend retorna 401 (ej. limpiar sesión y redirigir).
+ */
+export const registrarManejadorNoAutorizado = (callback) => {
+  manejadorNoAutorizado = callback;
+};
+
 /**
  * Realiza una petición HTTP contra el backend de FichApp y procesa
  * las respuestas de acuerdo al contrato estándar JSON en español.
@@ -46,6 +56,17 @@ const solicitar = async (ruta, opciones = {}, token = null) => {
       error.codigo = json?.error?.codigo || 'HTTP_ERROR';
       error.estado = json?.error?.estado || respuesta.status;
       error.detalles = json?.error?.detalles || null;
+
+      // Interceptor 401: Token expirado o revocado en base de datos
+      // Dispara la desautenticación automática solo en peticiones autenticadas (evita loop en /login)
+      if (error.estado === 401 && ruta !== ENDPOINTS.LOGIN && typeof manejadorNoAutorizado === 'function') {
+        try {
+          manejadorNoAutorizado(error);
+        } catch (errCallback) {
+          console.warn('Error en callback no autorizado:', errCallback);
+        }
+      }
+
       throw error;
     }
 

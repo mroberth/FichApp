@@ -48,6 +48,23 @@ class AuthService
 
         // Protección contra enumeración de usuarios: mensaje idéntico si no existe
         if ($usuario === null) {
+            // Si vino academia_id explícito o contexto, registrar auditoría de intento fallido por usuario inexistente
+            if ($dto->academiaId !== null) {
+                $this->auditoriaRepo->registrar(
+                    $dto->academiaId,
+                    null,
+                    'LOGIN_FALLIDO',
+                    'seguridad.usuarios',
+                    '00000000-0000-0000-0000-000000000000',
+                    [
+                        'ip'                   => $ip,
+                        'user_agent'           => $userAgent,
+                        'identificador_acceso' => $dto->identificadorAcceso,
+                        'motivo'               => 'usuario_inexistente',
+                    ]
+                );
+            }
+
             throw ExcepcionApi::noAutenticado('Credenciales de acceso incorrectas.');
         }
 

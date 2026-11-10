@@ -107,7 +107,7 @@ Consultar según la tarea:
 - `references/PALETA_Y_TOKENS.md`: colores, roles semánticos y tokens provisionales.
 - `references/TIPOGRAFIA_Y_ESPACIADO.md`: Inter, jerarquía, espaciado y radios.
 - `references/COMPONENTES_UI.md`: catálogo y comportamiento de componentes.
-- `references/PATRONES_DE_INTERFAZ.md`: navegación, listados, formularios y flujos.
+- `references/PATRONES_DE_INTERFAZ.md`: navegación, listados, formularios y flujos. Incluye la arquitectura visual oficial «Hero Branding Split».
 - `references/PRINCIPIOS_UX.md`: principios y leyes UX aplicadas.
 - `references/UX_POR_MODULO.md`: finanzas, asistencia y personas/familias.
 - `references/ACCESIBILIDAD.md`: contraste, interacción y contenido accesible.

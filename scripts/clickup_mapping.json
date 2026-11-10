@@ -56,6 +56,36 @@
         }
       }
     },
+    "Sprint 1.5: Hardening & Feedback Visual": {
+      "list_id": "901718132719",
+      "tasks": {
+        "T1.5.1": {
+          "id": "86e403b6b",
+          "name": "[T1.5.1] Rate Limiting y Auditoría de Intrusión en Login",
+          "priority": 1
+        },
+        "T1.5.2": {
+          "id": "86e403b6k",
+          "name": "[T1.5.2] Interceptor Global 401 y Auto-Logout Reactivo en Móvil",
+          "priority": 2
+        },
+        "T1.5.3": {
+          "id": "86e403b6q",
+          "name": "[T1.5.3] Componente Input con Validación Inline y Toggle Password (Design System)",
+          "priority": 2
+        },
+        "T1.5.4": {
+          "id": "86e403b72",
+          "name": "[T1.5.4] Endurecimiento UX en CreatePlayerScreen y LoginScreen",
+          "priority": 2
+        },
+        "T1.5.5": {
+          "id": "86e403b75",
+          "name": "[T1.5.5] Resiliencia de Transacciones y Manejo de Conflictos HTTP 409",
+          "priority": 2
+        }
+      }
+    },
     "Sprint 2: Cancha Offline-First (Asistencia)": {
       "list_id": "901718120309",
       "tasks": {

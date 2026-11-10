@@ -21,6 +21,12 @@ Guarda lo que no queremos volver a discutir ni explicar entre sesiones.
   - Tema Claro (Light Theme) sobrio, limpio y moderno estilo Notion/Figma.
   - Paleta oficial: Fondo `#F3F6F2`, Superficies `#FFFFFF`, Primario `#174D50` (Azul Petróleo), Acento `#B9E44A` (Verde Lima), Texto Principal `#252B27`.
   - Tokens centralizados en `mobile/src/theme/tokens.js`. Prohibido hardcodear estilos en componentes individuales.
+  - **Patrón Visual Aprobado «Hero Branding Split»:** División en cabecera superior en azul petróleo institucional con tipografía en blanco/lima, y hoja inferior blanca curvada (`borderTopLeftRadius: 32`) con controles táctiles de 48-50px.
+  - **Componentes Compartidos Obligatorios:**
+    - `FichAppInput`: Validación inline, borde rojo dinámico, toggle contraseña con `Eye`/`EyeOff`.
+    - `FichAppModalFeedback`: Desacoplamiento total de `Alert.alert` nativo con modales de confirmación/error estilizados.
+    - `FichAppLogoCompleto`: Logo vectorial integrado con isotipo y tipografía trazada oficial (`fichapp-2.svg`).
+  - **Formularios en Móvil:** Uso obligatorio de `KeyboardAvoidingView` y `ScrollView` (`keyboardShouldPersistTaps="handled"`) para evitar que el teclado virtual tape campos o botones de acción.
 - **Iconografía Vectorial:** Prohibido el uso de emojis como iconos de interfaz. Uso obligatorio de `lucide-react-native` y `react-native-svg`.
 - **Manejo de Áreas Seguras:** Prohibido el componente nativo `SafeAreaView` de React Native (deprecado). Uso obligatorio de `SafeAreaView` o `useSafeAreaInsets` de `react-native-safe-area-context`.
 - **Resolución de Red Móvil en Desarrollo:** Configuración en `mobile/src/config/api.js` que detecta dinámicamente la IP de la máquina de desarrollo (`Constants.expoConfig.hostUri` vía `expo-constants`, fallback `192.168.50.117:8000`) para garantizar conectividad desde teléfonos físicos en la red Wi-Fi sin colgarse en `localhost` o `10.0.2.2`. Timeout de 8s en `fetch` con `AbortController`.
@@ -36,6 +42,12 @@ Guarda lo que no queremos volver a discutir ni explicar entre sesiones.
 - **Carga Infinita en Login Móvil en Celulares Físicos:** Se resolvió sustituyendo la IP fija `10.0.2.2` (solo para emuladores PC) por resolución dinámica con `expo-constants` apuntando a la IP Wi-Fi de la laptop (`192.168.50.117`), y agregando un timeout de 8s con `AbortController` en `apiService.js`.
 - **Carga de Atletas y Flujo Interactivo Móvil [T1.4]:** Se corrigió la extracción del token Bearer en `PlayerDirectoryScreen` y `PlayerDetailScreen` utilizando `token` del contexto de autenticación con fallback asíncrono a `obtenerToken()` de SecureStore. Además, se implementó el flujo interactivo completo con pantalla modal para asignación y cambio de equipo/dorsal en tiempo real, baja lógica auditada y pantalla de alta de atletas `CreatePlayerScreen` con gestión de tutores legales.
 - **Contenido Solapado con Notch / Advertencia SafeAreaView:** Se migró toda la navegación y pantallas al componente `SafeAreaView` de `react-native-safe-area-context`.
+- **Endurecimiento Técnico (Sprint 1.5):**
+  - **Rate Limiting:** Implementado algoritmo Token Bucket (`App\Services\TokenBucketLimiter` con tabla `seguridad.rate_limits`) y middleware `RateLimitMiddleware` en `POST /api/v1/auth/login` (5 peticiones de ráfaga, reposición constante de 5 tokens cada 15 min, cabeceras estándar y código `HTTP 429 Too Many Requests`).
+  - **Auditoría de Intentos Inexistentes:** Registro en `seguridad.registros_auditoria` con acción `LOGIN_FALLIDO` aun si el identificador no existe en la academia.
+  - **Interceptor 401 y Auto-Logout:** En `apiService.js`, respuestas 401 en llamadas autenticadas disparan desautenticación automática en `AuthContext.js`, limpiando `SecureStore` y devolviendo al usuario a `LoginScreen` con mensaje descriptivo ("Tu sesión ha expirado").
+  - **Resiliencia Transaccional:** Mapeo formal de colisiones de cédula a `ExcepcionApi::yaExiste()` (`HTTP 409 Conflict`), captura controlada de `SQLSTATE 23505` en PostgreSQL y transacciones atómicas con `Database::transaction()`.
+  - **Ergonomía de Formularios Móviles:** Se integró `KeyboardAvoidingView` en `CreatePlayerScreen` y se erradicó `Alert.alert()` nativo en favor de `FichAppModalFeedback` y validaciones inline con `FichAppInput`.
 
 ## 3. Preferencias de Trabajo del Desarrollador
 - **Metodología Paso a Paso:** Trabajar una sola tarea a la vez del backlog de ClickUp.
@@ -61,6 +73,13 @@ Sprint 1: Núcleo Deportivo & Familias (List ID: 901718120308) -- 100% COMPLETAD
   [x] T1.2: Repositorios PDO y Servicios de Fichas Deportivas (ID: 86e3zm74y)  <-- COMPLETADA
   [x] T1.3: Endpoints REST Deportivos (ID: 86e3zm74z)  <-- COMPLETADA
   [x] T1.4: UI Móvil: Directorio de Jugadores y Búsqueda (ID: 86e3zm750)  <-- COMPLETADA
+
+Sprint 1.5: Hardening & Feedback Visual -- 100% COMPLETADO 🎉
+  [x] T1.5.1: Rate Limiting (Token Bucket) y Auditoría de Intrusión en Login (429)  <-- COMPLETADA
+  [x] T1.5.2: Interceptor Global 401 y Auto-Logout Reactivo en Móvil  <-- COMPLETADA
+  [x] T1.5.3: Componente Input con Validación Inline y Toggle Password (Design System)  <-- COMPLETADA
+  [x] T1.5.4: Endurecimiento UX en CreatePlayerScreen, LoginScreen y FichAppModalFeedback  <-- COMPLETADA
+  [x] T1.5.5: Resiliencia de Transacciones y Manejo de Conflictos HTTP 409  <-- COMPLETADA
 
 Sprint 2: Cancha Offline-First (Asistencia) (List ID: 901718120309) -- SIGUIENTE SPRINT 🚀
   [ ] T2.1: Migraciones Backend: Sesiones y Registros de Asistencia (ID: 86e3zm751)  <-- SIGUIENTE TAREA

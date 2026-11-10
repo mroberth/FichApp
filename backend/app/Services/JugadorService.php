@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use PDOException;
 use App\Core\Database;
 use App\Core\ExcepcionApi;
 use App\DTOs\RegistrarJugadorDTO;
@@ -57,7 +58,7 @@ class JugadorService
         if ($dto->cedula !== null) {
             $existente = $this->jugadorRepo->buscarPorCedula($dto->cedula, $academiaId);
             if ($existente !== null) {
-                throw ExcepcionApi::validacion("Ya existe un jugador registrado con la cédula {$dto->cedula}.");
+                throw ExcepcionApi::yaExiste("Ya existe un jugador registrado con la cédula {$dto->cedula}.");
             }
         }
 
@@ -78,101 +79,109 @@ class JugadorService
         }
 
         // Orquestar transacción atómica
-        return Database::transaction(function () use ($academiaId, $dto, $usuarioId) {
-            $representanteId = $dto->representanteId;
+        try {
+            return Database::transaction(function () use ($academiaId, $dto, $usuarioId) {
+                $representanteId = $dto->representanteId;
 
-            // Si no viene ID de representante, buscar o crear a partir de datosRepresentante
-            if ($representanteId === null && $dto->datosRepresentante !== null) {
-                $datosRep = $dto->datosRepresentante;
+                // Si no viene ID de representante, buscar o crear a partir de datosRepresentante
+                if ($representanteId === null && $dto->datosRepresentante !== null) {
+                    $datosRep = $dto->datosRepresentante;
 
-                // Si tiene cédula, comprobar si ya existe para reutilizar el tutor en familias multihijo
-                if ($datosRep->cedula !== null) {
-                    $repExistente = $this->representanteRepo->buscarPorCedula($datosRep->cedula, $academiaId);
-                    if ($repExistente !== null) {
-                        $representanteId = (string)$repExistente['id'];
+                    // Si tiene cédula, comprobar si ya existe para reutilizar el tutor en familias multihijo
+                    if ($datosRep->cedula !== null) {
+                        $repExistente = $this->representanteRepo->buscarPorCedula($datosRep->cedula, $academiaId);
+                        if ($repExistente !== null) {
+                            $representanteId = (string)$repExistente['id'];
+                        }
+                    }
+
+                    // Si no existía, insertarlo en el padrón
+                    if ($representanteId === null) {
+                        $representanteId = $this->representanteRepo->crear($academiaId, [
+                            'nombres'   => $datosRep->nombres,
+                            'apellidos' => $datosRep->apellidos,
+                            'telefono'  => $datosRep->telefono,
+                            'cedula'    => $datosRep->cedula,
+                            'correo'    => $datosRep->correo,
+                            'direccion' => $datosRep->direccion,
+                        ]);
+
+                        $this->auditoriaRepo->registrar(
+                            $academiaId,
+                            $usuarioId,
+                            'CREAR_REPRESENTANTE',
+                            'negocio.representantes',
+                            $representanteId,
+                            ['nombres' => $datosRep->nombres, 'apellidos' => $datosRep->apellidos]
+                        );
                     }
                 }
 
-                // Si no existía, insertarlo en el padrón
                 if ($representanteId === null) {
-                    $representanteId = $this->representanteRepo->crear($academiaId, [
-                        'nombres'   => $datosRep->nombres,
-                        'apellidos' => $datosRep->apellidos,
-                        'telefono'  => $datosRep->telefono,
-                        'cedula'    => $datosRep->cedula,
-                        'correo'    => $datosRep->correo,
-                        'direccion' => $datosRep->direccion,
-                    ]);
-
-                    $this->auditoriaRepo->registrar(
-                        $academiaId,
-                        $usuarioId,
-                        'CREAR_REPRESENTANTE',
-                        'negocio.representantes',
-                        $representanteId,
-                        ['nombres' => $datosRep->nombres, 'apellidos' => $datosRep->apellidos]
-                    );
+                    throw ExcepcionApi::validacion('No fue posible asociar o crear el representante para el jugador.');
                 }
-            }
 
-            if ($representanteId === null) {
-                throw ExcepcionApi::validacion('No fue posible asociar o crear el representante para el jugador.');
-            }
-
-            // 2. Crear la ficha del jugador
-            $jugadorId = $this->jugadorRepo->crear($academiaId, [
-                'nombres'          => $dto->nombres,
-                'apellidos'        => $dto->apellidos,
-                'fecha_nacimiento' => $dto->fechaNacimiento,
-                'cedula'           => $dto->cedula,
-                'sexo'             => $dto->sexo,
-                'ficha_medica'     => $dto->fichaMedica,
-                'estado'           => 'activo',
-            ]);
-
-            // 3. Vincular jugador y representante
-            $this->jugadorRepo->vincularRepresentante(
-                $academiaId,
-                $jugadorId,
-                $representanteId,
-                $dto->tipoRelacion,
-                $dto->esContactoPrincipal
-            );
-
-            // 4. Asignar a equipo si aplica
-            if ($dto->equipoId !== null) {
-                $this->jugadorRepo->asignarAEquipo(
-                    $academiaId,
-                    $jugadorId,
-                    $dto->equipoId,
-                    $dto->temporada,
-                    $dto->numeroCamiseta,
-                    $dto->posicion
-                );
-            }
-
-            // 5. Auditoría
-            $this->auditoriaRepo->registrar(
-                $academiaId,
-                $usuarioId,
-                'REGISTRAR_JUGADOR',
-                'negocio.jugadores',
-                $jugadorId,
-                [
+                // 2. Crear la ficha del jugador
+                $jugadorId = $this->jugadorRepo->crear($academiaId, [
                     'nombres'          => $dto->nombres,
                     'apellidos'        => $dto->apellidos,
-                    'representante_id' => $representanteId,
-                    'equipo_id'        => $dto->equipoId,
-                ]
-            );
+                    'fecha_nacimiento' => $dto->fechaNacimiento,
+                    'cedula'           => $dto->cedula,
+                    'sexo'             => $dto->sexo,
+                    'ficha_medica'     => $dto->fichaMedica,
+                    'estado'           => 'activo',
+                ]);
 
-            $ficha = $this->jugadorRepo->obtenerFichaCompleta($jugadorId, $academiaId);
-            if ($ficha === null) {
-                throw ExcepcionApi::servidor('Error al recuperar la ficha del jugador recién creado.');
+                // 3. Vincular jugador y representante
+                $this->jugadorRepo->vincularRepresentante(
+                    $academiaId,
+                    $jugadorId,
+                    $representanteId,
+                    $dto->tipoRelacion,
+                    $dto->esContactoPrincipal
+                );
+
+                // 4. Asignar a equipo si aplica
+                if ($dto->equipoId !== null) {
+                    $this->jugadorRepo->asignarAEquipo(
+                        $academiaId,
+                        $jugadorId,
+                        $dto->equipoId,
+                        $dto->temporada,
+                        $dto->numeroCamiseta,
+                        $dto->posicion
+                    );
+                }
+
+                // 5. Auditoría
+                $this->auditoriaRepo->registrar(
+                    $academiaId,
+                    $usuarioId,
+                    'REGISTRAR_JUGADOR',
+                    'negocio.jugadores',
+                    $jugadorId,
+                    [
+                        'nombres'          => $dto->nombres,
+                        'apellidos'        => $dto->apellidos,
+                        'representante_id' => $representanteId,
+                        'equipo_id'        => $dto->equipoId,
+                    ]
+                );
+
+                $ficha = $this->jugadorRepo->obtenerFichaCompleta($jugadorId, $academiaId);
+                if ($ficha === null) {
+                    throw ExcepcionApi::errorInterno('Error al recuperar la ficha del jugador recién creado.');
+                }
+
+                return $ficha;
+            });
+        } catch (PDOException $e) {
+            // Manejo de condición de carrera en restricción de unicidad PostgreSQL (SQLSTATE 23505)
+            if ($e->getCode() === '23505') {
+                throw ExcepcionApi::yaExiste('Conflicto de unicidad: Ya existe un registro coincidente en la academia.');
             }
-
-            return $ficha;
-        });
+            throw $e;
+        }
     }
 
     /**
@@ -239,7 +248,7 @@ class JugadorService
         if ($dto->cedula !== null && $dto->cedula !== $jugador['cedula']) {
             $existente = $this->jugadorRepo->buscarPorCedula($dto->cedula, $academiaId);
             if ($existente !== null && $existente['id'] !== $jugadorId) {
-                throw ExcepcionApi::validacion("Ya existe otro jugador registrado con la cédula {$dto->cedula}.");
+                throw ExcepcionApi::yaExiste("Ya existe otro jugador registrado con la cédula {$dto->cedula}.");
             }
         }
 
@@ -309,29 +318,31 @@ class JugadorService
             throw ExcepcionApi::noEncontrado('El equipo no existe en esta academia.');
         }
 
-        $this->jugadorRepo->asignarAEquipo(
-            $academiaId,
-            $dto->jugadorId,
-            $dto->equipoId,
-            $dto->temporada,
-            $dto->numeroCamiseta,
-            $dto->posicion
-        );
+        return Database::transaction(function () use ($academiaId, $dto, $usuarioId) {
+            $this->jugadorRepo->asignarAEquipo(
+                $academiaId,
+                $dto->jugadorId,
+                $dto->equipoId,
+                $dto->temporada,
+                $dto->numeroCamiseta,
+                $dto->posicion
+            );
 
-        $this->auditoriaRepo->registrar(
-            $academiaId,
-            $usuarioId,
-            'ASIGNAR_JUGADOR_EQUIPO',
-            'negocio.asignaciones_jugadores_equipos',
-            $dto->jugadorId,
-            [
-                'equipo_id'       => $dto->equipoId,
-                'temporada'       => $dto->temporada,
-                'numero_camiseta' => $dto->numeroCamiseta,
-                'posicion'        => $dto->posicion,
-            ]
-        );
+            $this->auditoriaRepo->registrar(
+                $academiaId,
+                $usuarioId,
+                'ASIGNAR_JUGADOR_EQUIPO',
+                'negocio.asignaciones_jugadores_equipos',
+                $dto->jugadorId,
+                [
+                    'equipo_id'       => $dto->equipoId,
+                    'temporada'       => $dto->temporada,
+                    'numero_camiseta' => $dto->numeroCamiseta,
+                    'posicion'        => $dto->posicion,
+                ]
+            );
 
-        return $this->obtenerFicha($dto->jugadorId, $academiaId);
+            return $this->obtenerFicha($dto->jugadorId, $academiaId);
+        });
     }
 }

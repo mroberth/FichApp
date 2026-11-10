@@ -33,6 +33,7 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/apiService';
 import { obtenerToken } from '../../services/storage';
+import { FichAppModalFeedback } from '../../components';
 import { COLORES, ESPACIADO, RADIOS, TIPOGRAFIA, SOMBRAS } from '../../theme';
 
 export default function PlayerDetailScreen({ route, navigation }) {
@@ -50,6 +51,19 @@ export default function PlayerDetailScreen({ route, navigation }) {
   const [dorsalInput, setDorsalInput] = useState('');
   const [posicionInput, setPosicionInput] = useState('Mediocampista');
   const [guardandoEquipo, setGuardandoEquipo] = useState(false);
+
+  // Estado para feedback desacoplado (reemplazo de Alert.alert)
+  const [modalFeedback, setModalFeedback] = useState({
+    visible: false,
+    tipo: 'confirmacion',
+    titulo: '',
+    mensaje: '',
+    textoConfirmar: 'Aceptar',
+    textoCancelar: 'Cancelar',
+    onConfirmar: null,
+    onCancelar: null,
+    cargando: false,
+  });
 
   const cargarFicha = useCallback(async () => {
     if (!jugadorId) {
@@ -101,7 +115,15 @@ export default function PlayerDetailScreen({ route, navigation }) {
 
   const guardarAsignacionEquipo = async () => {
     if (!equipoSeleccionado) {
-      Alert.alert('Selección requerida', 'Por favor selecciona un equipo para el atleta.');
+      setModalFeedback({
+        visible: true,
+        tipo: 'error',
+        titulo: 'Selección Requerida',
+        mensaje: 'Por favor selecciona un equipo para el atleta antes de confirmar.',
+        textoConfirmar: 'Entendido',
+        onConfirmar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+        onCancelar: null,
+      });
       return;
     }
 
@@ -117,38 +139,76 @@ export default function PlayerDetailScreen({ route, navigation }) {
 
       await apiService.asignarEquipo(token, jugadorId, payload);
       setModalEquipoVisible(false);
-      Alert.alert('Plantel Actualizado', 'El atleta ha sido asignado al equipo exitosamente.');
       await cargarFicha();
+
+      setModalFeedback({
+        visible: true,
+        tipo: 'exito',
+        titulo: 'Plantel Actualizado',
+        mensaje: 'El atleta ha sido asignado al equipo exitosamente.',
+        textoConfirmar: 'Aceptar',
+        onConfirmar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+        onCancelar: null,
+      });
     } catch (err) {
-      Alert.alert('Error al asignar', err.message || 'No se pudo actualizar el equipo.');
+      setModalFeedback({
+        visible: true,
+        tipo: 'error',
+        titulo: 'Error al Asignar',
+        mensaje: err.message || 'No se pudo actualizar el equipo.',
+        textoConfirmar: 'Cerrar',
+        onConfirmar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+        onCancelar: null,
+      });
     } finally {
       setGuardandoEquipo(false);
     }
   };
 
-  const confirmarBaja = () => {
-    Alert.alert(
-      'Dar de Baja Atleta',
-      `¿Estás seguro de que deseas retirar la ficha de ${ficha?.nombres} ${ficha?.apellidos}? Esta acción marcará su estatus como inactivo.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Dar de Baja',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const token = tokenContext || (await obtenerToken());
-              await apiService.eliminarJugador(token, jugadorId);
-              Alert.alert('Atleta Retirado', 'La ficha ha sido dada de baja exitosamente.', [
-                { text: 'Aceptar', onPress: () => navigation.goBack() },
-              ]);
-            } catch (err) {
-              Alert.alert('Error', err.message || 'No se pudo dar de baja al atleta.');
-            }
-          },
+  const ejecutarBaja = async () => {
+    setModalFeedback((prev) => ({ ...prev, cargando: true }));
+    try {
+      const token = tokenContext || (await obtenerToken());
+      await apiService.eliminarJugador(token, jugadorId);
+      setModalFeedback({
+        visible: true,
+        tipo: 'exito',
+        titulo: 'Atleta Retirado',
+        mensaje: 'La ficha del atleta ha sido dada de baja exitosamente.',
+        textoConfirmar: 'Aceptar',
+        cargando: false,
+        onConfirmar: () => {
+          setModalFeedback((prev) => ({ ...prev, visible: false }));
+          navigation.goBack();
         },
-      ]
-    );
+        onCancelar: null,
+      });
+    } catch (err) {
+      setModalFeedback({
+        visible: true,
+        tipo: 'error',
+        titulo: 'Error al Retirar',
+        mensaje: err.message || 'No se pudo dar de baja al atleta.',
+        textoConfirmar: 'Cerrar',
+        cargando: false,
+        onConfirmar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+        onCancelar: null,
+      });
+    }
+  };
+
+  const confirmarBaja = () => {
+    setModalFeedback({
+      visible: true,
+      tipo: 'peligro',
+      titulo: 'Dar de Baja Atleta',
+      mensaje: `¿Estás seguro de que deseas retirar la ficha de ${ficha?.nombres} ${ficha?.apellidos}? Esta acción marcará su estatus como inactivo en el padrón.`,
+      textoConfirmar: 'Sí, dar de baja',
+      textoCancelar: 'Cancelar',
+      cargando: false,
+      onConfirmar: ejecutarBaja,
+      onCancelar: () => setModalFeedback((prev) => ({ ...prev, visible: false })),
+    });
   };
 
   // Cálculo de edad en base a fecha de nacimiento
@@ -577,6 +637,19 @@ export default function PlayerDetailScreen({ route, navigation }) {
           </View>
         </View>
       </Modal>
+
+      {/* Modal Desacoplado de Feedback y Confirmación */}
+      <FichAppModalFeedback
+        visible={modalFeedback.visible}
+        tipo={modalFeedback.tipo}
+        titulo={modalFeedback.titulo}
+        mensaje={modalFeedback.mensaje}
+        textoConfirmar={modalFeedback.textoConfirmar}
+        textoCancelar={modalFeedback.textoCancelar}
+        onConfirmar={modalFeedback.onConfirmar}
+        onCancelar={modalFeedback.onCancelar}
+        cargando={modalFeedback.cargando}
+      />
     </SafeAreaView>
   );
 }

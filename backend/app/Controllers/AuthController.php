@@ -10,6 +10,7 @@ use App\Core\ExcepcionApi;
 use App\Core\Respuesta;
 use App\DTOs\LoginDTO;
 use App\Middlewares\AuthMiddleware;
+use App\Middlewares\RateLimitMiddleware;
 use App\Services\AuthService;
 
 /**
@@ -40,6 +41,11 @@ class AuthController
 
         $ip = self::obtenerIpCliente();
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+
+        // Rate Limiting (Token Bucket): Máximo 5 intentos de ráfaga con recarga de 5 tokens cada 15 minutos (900 seg)
+        // Se limita tanto por IP como por identificador de acceso
+        $claveRateLimit = ($ip ?: 'unknown') . ':' . strtolower($dto->identificadorAcceso);
+        RateLimitMiddleware::verificar('auth_login', $claveRateLimit, 5, 5 / 900);
 
         $authService = new AuthService();
         $resultado = $authService->login($dto, $ip, $userAgent);
